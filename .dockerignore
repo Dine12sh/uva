@@ -1,0 +1,55 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+.next
+.vercel
+out
+dist
+
+# Dev database (never commit)
+*.db
+*.db-journal
+dev.db
+prisma/dev.db
+
+# Environment variables (never commit)
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.suo
+*.user
+
+# Git
+.git
+.gitignore
+.github
+
+# Testing
+coverage
+.nyc_output
+
+# Logs
+logs
+*.log
+
+# Cache
+.turbo
+.cache
+*.tsbuildinfo
+
+# Large media (handled by Git LFS or CDN)
+public/media/*.mp4
