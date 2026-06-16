@@ -1,0 +1,35 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Admin {
+  id           Int      @id @default(1)
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Memory {
+  id        String   @id @default(uuid())
+  type      String   // "photo" | "video"
+  url       String
+  caption   String?
+  section   String   // "first_memories" | "beautiful_moments" | "fun_adventures" | "special_days" | "unforgettable_memories"
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Settings {
+  id             Int      @id @default(1)
+  title          String   @default("🎉 Happy Birthday, My Amazing Friend! 🎉")
+  subtitle       String   @default("Thank you for being one of the most wonderful people in my life.")
+  letterText     String
+  musicUrl       String   @default("/media/default_music.mp3")
+  daysCelebrated Int      @default(365)
+  updatedAt      DateTime @updatedAt
+}
