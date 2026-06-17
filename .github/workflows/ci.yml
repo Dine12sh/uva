@@ -15,7 +15,7 @@ concurrency:
 
 env:
   NODE_VERSION: "20"
-  DATABASE_URL: "file:./dev.db"
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
   ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
 
@@ -156,11 +156,6 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Push schema to test DB and verify
-        run: npx prisma db push --skip-generate
-        env:
-          DATABASE_URL: "file:./ci-test.db"
-
   # ─────────────────────────────────────────────
   # 5. PRODUCTION BUILD
   # ─────────────────────────────────────────────
@@ -206,7 +201,7 @@ jobs:
       - name: Build Next.js application
         run: npm run build
         env:
-          DATABASE_URL: "file:./dev.db"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           NODE_ENV: production

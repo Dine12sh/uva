@@ -5,6 +5,8 @@ import { decryptSession } from "../../lib/cryptoSession";
 import AdminDashboardClient from "./AdminDashboardClient";
 import AdminLoginClient from "./AdminLoginClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPage() {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("admin_session")?.value;
