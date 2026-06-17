@@ -20,21 +20,21 @@ interface TimelineItem {
 const timelineData: TimelineItem[] = [
   {
     section: "first_memories",
-    title: "🌸 First Memories",
+    title: "🌸 Beautiful shot",
     emoji: "🌸",
     description: "The very start of a beautiful friendship. Cherishing the early days and laughing at the smallest things.",
     photos: ["/media/IMG-20251207-WA0025.jpg", "/media/IMG-20251207-WA0035.jpg"],
   },
   {
     section: "beautiful_moments",
-    title: "📸 Beautiful Moments",
+    title: "📸 Unforgettable Memories",
     emoji: "📸",
     description: "Capturing your gorgeous smile. Unplanned coffee dates, warm talks, and the comfort of just being around you.",
     photos: ["/media/25860_ae_lite_edit (1).jpg", "/media/IMG_20260613_223016.jpg"],
   },
   {
     section: "fun_adventures",
-    title: "🎈 Fun Adventures",
+    title: "🎈 Beautiful Moments",
     emoji: "🎈",
     description: "Exploring, making spontaneous plans, and traveling through highlights of pure laughter and joy.",
     photos: ["/media/IMG_20260614_144734~2.jpg", "/media/IMG_20260614_180206.jpg"],
@@ -50,7 +50,7 @@ const timelineData: TimelineItem[] = [
     section: "unforgettable_memories",
     title: "💖 Unforgettable Memories",
     emoji: "💖",
-    description: "Memories that we will cherish forever. Always supporting and standing by each other, no matter what.",
+    description: " ",
     photos: ["/media/IMG_20260615_220045.jpg", "/media/IMG-20260108-WA0012.jpg"],
   },
 ];
@@ -135,7 +135,7 @@ export default function Timeline() {
         <div className="relative mt-12">
           {/* Background Central Line */}
           <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-[4px] bg-zinc-800 rounded-full transform -translate-x-1/2 pointer-events-none" />
-          
+
           {/* Glowing Animated Scroll Line */}
           <div
             ref={lineRef}
@@ -149,9 +149,8 @@ export default function Timeline() {
               return (
                 <div
                   key={idx}
-                  className={`relative flex flex-col md:flex-row items-start md:items-center w-full ${
-                    isLeft ? "md:flex-row-reverse" : ""
-                  }`}
+                  className={`relative flex flex-col md:flex-row items-start md:items-center w-full ${isLeft ? "md:flex-row-reverse" : ""
+                    }`}
                 >
                   {/* Timeline bullet node */}
                   <div className="absolute left-4 md:left-1/2 w-8 h-8 rounded-full bg-slate-900 border-[3px] border-pink-400 shadow-[0_0_10px_rgba(244,63,94,0.4)] flex items-center justify-center text-xs z-10 transform -translate-x-1/2">
@@ -165,7 +164,7 @@ export default function Timeline() {
                       <span className="text-pink-300 text-xs font-bold uppercase tracking-wider">
                         {item.title}
                       </span>
-                      
+
                       {/* Card Content */}
                       <p className="text-zinc-300 mt-4 text-sm md:text-base leading-relaxed">
                         {item.description}

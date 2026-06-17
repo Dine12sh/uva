@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  logoutAction, 
-  updateSettingsAction, 
-  deleteMemoryAction, 
-  editMemoryAction, 
-  uploadMemoryAction 
+import {
+  logoutAction,
+  updateSettingsAction,
+  deleteMemoryAction,
+  editMemoryAction,
+  uploadMemoryAction
 } from "./actions";
 import { LogOut, Settings as SettingsIcon, Image as ImageIcon, Upload, Trash2, Edit2, Check, X } from "lucide-react";
 
@@ -35,7 +35,7 @@ interface AdminDashboardClientProps {
 
 export default function AdminDashboardClient({ initialSettings, initialMemories }: AdminDashboardClientProps) {
   const [activeTab, setActiveTab] = useState<"settings" | "upload" | "memories">("settings");
-  
+
   // Settings states
   const [settings, setSettings] = useState(initialSettings);
   const [settingsLoading, setSettingsLoading] = useState(false);
@@ -192,32 +192,29 @@ export default function AdminDashboardClient({ initialSettings, initialMemories 
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col lg:flex-row max-w-7xl w-full mx-auto p-6 gap-8">
-        
+
         {/* Navigation Sidebar */}
         <aside className="lg:w-64 flex flex-row lg:flex-col gap-2 border-b lg:border-b-0 lg:border-r border-neutral-800 pb-4 lg:pb-0 lg:pr-6">
           <button
             onClick={() => setActiveTab("settings")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm w-full transition-all cursor-pointer ${
-              activeTab === "settings" ? "bg-pink-500/10 text-pink-300 border border-pink-500/20" : "text-zinc-400 hover:bg-white/5"
-            }`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm w-full transition-all cursor-pointer ${activeTab === "settings" ? "bg-pink-500/10 text-pink-300 border border-pink-500/20" : "text-zinc-400 hover:bg-white/5"
+              }`}
           >
             <SettingsIcon size={18} /> Global Settings
           </button>
-          
+
           <button
             onClick={() => setActiveTab("upload")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm w-full transition-all cursor-pointer ${
-              activeTab === "upload" ? "bg-pink-500/10 text-pink-300 border border-pink-500/20" : "text-zinc-400 hover:bg-white/5"
-            }`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm w-full transition-all cursor-pointer ${activeTab === "upload" ? "bg-pink-500/10 text-pink-300 border border-pink-500/20" : "text-zinc-400 hover:bg-white/5"
+              }`}
           >
             <Upload size={18} /> Upload Memory
           </button>
 
           <button
             onClick={() => setActiveTab("memories")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm w-full transition-all cursor-pointer ${
-              activeTab === "memories" ? "bg-pink-500/10 text-pink-300 border border-pink-500/20" : "text-zinc-400 hover:bg-white/5"
-            }`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm w-full transition-all cursor-pointer ${activeTab === "memories" ? "bg-pink-500/10 text-pink-300 border border-pink-500/20" : "text-zinc-400 hover:bg-white/5"
+              }`}
           >
             <ImageIcon size={18} /> Manage Catalog
           </button>
@@ -225,14 +222,14 @@ export default function AdminDashboardClient({ initialSettings, initialMemories 
 
         {/* Tab Contents */}
         <main className="flex-1 bg-neutral-900/30 border border-neutral-800/80 rounded-2xl p-6 md:p-8">
-          
+
           {/* Tab 1: Global Settings */}
           {activeTab === "settings" && (
             <form onSubmit={handleSaveSettings} className="space-y-6">
               <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-300 to-amber-200">
                 Global Settings Settings
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs font-semibold text-zinc-400 uppercase mb-2">Website Title</label>
@@ -325,9 +322,9 @@ export default function AdminDashboardClient({ initialSettings, initialMemories 
                     onChange={(e) => setUploadSection(e.target.value)}
                     className="w-full h-11 px-4 bg-black/40 border border-neutral-800 rounded-xl focus:border-pink-500 focus:outline-none transition-colors text-white"
                   >
-                    <option value="first_memories">🌸 First Memories</option>
-                    <option value="beautiful_moments">📸 Beautiful Moments</option>
-                    <option value="fun_adventures">🎈 Fun Adventures</option>
+                    <option value="first_memories">🌸 Beautiful shot</option>
+                    <option value="beautiful_moments">📸 Unforgettable Memories</option>
+                    <option value="fun_adventures">🎈 Unforgettable Memories</option>
                     <option value="special_days">🌟 Special Days</option>
                     <option value="unforgettable_memories">💖 Unforgettable Memories</option>
                   </select>
@@ -391,7 +388,7 @@ export default function AdminDashboardClient({ initialSettings, initialMemories 
                   <tbody className="divide-y divide-neutral-900 text-sm">
                     {memories.map((mem) => {
                       const isEditing = editingId === mem.id;
-                      
+
                       return (
                         <tr key={mem.id} className="hover:bg-neutral-900/20">
                           {/* Thumbnail Column */}
@@ -413,9 +410,9 @@ export default function AdminDashboardClient({ initialSettings, initialMemories 
                                 onChange={(e) => setEditSection(e.target.value)}
                                 className="bg-black border border-neutral-800 rounded px-2 py-1 text-xs"
                               >
-                                <option value="first_memories">🌸 First Memories</option>
-                                <option value="beautiful_moments">📸 Beautiful Moments</option>
-                                <option value="fun_adventures">🎈 Fun Adventures</option>
+                                <option value="first_memories">🌸 Beautiful shot</option>
+                                <option value="beautiful_moments">📸 Unforgettable Memories</option>
+                                <option value="fun_adventures">🎈 Beautiful Moments</option>
                                 <option value="special_days">🌟 Special Days</option>
                                 <option value="unforgettable_memories">💖 Unforgettable Memories</option>
                               </select>
