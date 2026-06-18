@@ -1,10 +1,10 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
 }
 
 model Admin {
@@ -16,10 +16,10 @@ model Admin {
 
 model Memory {
   id        String   @id @default(uuid())
-  type      String   // "photo" | "video"
+  type      String
   url       String
   caption   String?
-  section   String   // "first_memories" | "beautiful_moments" | "fun_adventures" | "special_days" | "unforgettable_memories"
+  section   String
   order     Int      @default(0)
   createdAt DateTime @default(now())
 }
