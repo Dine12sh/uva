@@ -84,7 +84,7 @@ export function FloatingMemories({ onExplode }: FloatingMemoriesProps) {
         {MEMORIES.map((mem, index) => (
           <motion.div
             key={mem.id}
-            ref={(el) => {
+            ref={(el: HTMLDivElement | null) => {
               cardsRef.current[index] = el;
             }}
             initial={{ opacity: 0, y: 100 }}
