@@ -2,22 +2,12 @@
 
 import React, { useState } from "react";
 import {
-  logoutAction,
-  updateSettingsAction,
   deleteMemoryAction,
   editMemoryAction,
   uploadMemoryAction
 } from "./actions";
-import { LogOut, Settings as SettingsIcon, Image as ImageIcon, Upload, Trash2, Edit2, Check, X } from "lucide-react";
+import { Image as ImageIcon, Upload, Trash2, Edit2, Check, X } from "lucide-react";
 
-interface Settings {
-  id: number;
-  title: string;
-  subtitle: string;
-  letterText: string;
-  musicUrl: string;
-  daysCelebrated: number;
-}
 
 interface Memory {
   id: string;
@@ -29,19 +19,12 @@ interface Memory {
 }
 
 interface AdminDashboardClientProps {
-  initialSettings: Settings;
   initialMemories: Memory[];
 }
 
-export default function AdminDashboardClient({ initialSettings, initialMemories }: AdminDashboardClientProps) {
-  const [activeTab, setActiveTab] = useState<"settings" | "upload" | "memories">("settings");
-
-  // Settings states
-  const [settings, setSettings] = useState(initialSettings);
-  const [settingsLoading, setSettingsLoading] = useState(false);
-  const [settingsMsg, setSettingsMsg] = useState<string | null>(null);
-
-  // Upload states
+export default function AdminDashboardClient({ initialMemories }: AdminDashboardClientProps) {
+  const [activeTab, setActiveTab] = useState<"upload" | "memories">("memories");
+  const [memories, setMemories] = useState<Memory[]>(initialMemories);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadCaption, setUploadCaption] = useState("");
   const [uploadSection, setUploadSection] = useState("first_memories");
@@ -49,39 +32,10 @@ export default function AdminDashboardClient({ initialSettings, initialMemories 
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState<string | null>(null);
 
-  // Memories states
-  const [memories, setMemories] = useState(initialMemories);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editCaption, setEditCaption] = useState("");
   const [editSection, setEditSection] = useState("");
   const [editOrder, setEditOrder] = useState(0);
-
-  // Logout handler
-  const handleLogout = async () => {
-    await logoutAction();
-    window.location.reload();
-  };
-
-  // Settings update
-  const handleSaveSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSettingsLoading(true);
-    setSettingsMsg(null);
-
-    const res = await updateSettingsAction({
-      title: settings.title,
-      subtitle: settings.subtitle,
-      letterText: settings.letterText,
-      daysCelebrated: settings.daysCelebrated,
-    });
-
-    if (res.success) {
-      setSettingsMsg("✅ Settings updated successfully.");
-    } else {
-      setSettingsMsg(`❌ ${res.error || "Failed to update settings."}`);
-    }
-    setSettingsLoading(false);
-  };
 
   // Drag and Drop/File selection reader
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -178,16 +132,11 @@ export default function AdminDashboardClient({ initialSettings, initialMemories 
             Cinematic Admin
           </span>
           <span className="text-xs bg-neutral-800 px-2.5 py-1 rounded-full text-zinc-500 font-semibold uppercase">
-            Local SQLite
+            JSON DB
           </span>
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 px-4 py-2 border border-neutral-800 rounded-full hover:bg-white/5 transition-all text-sm font-semibold cursor-pointer"
-        >
-          <LogOut size={16} /> Logout
-        </button>
+
       </header>
 
       {/* Main Content Area */}
@@ -195,13 +144,7 @@ export default function AdminDashboardClient({ initialSettings, initialMemories 
 
         {/* Navigation Sidebar */}
         <aside className="lg:w-64 flex flex-row lg:flex-col gap-2 border-b lg:border-b-0 lg:border-r border-neutral-800 pb-4 lg:pb-0 lg:pr-6">
-          <button
-            onClick={() => setActiveTab("settings")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm w-full transition-all cursor-pointer ${activeTab === "settings" ? "bg-pink-500/10 text-pink-300 border border-pink-500/20" : "text-zinc-400 hover:bg-white/5"
-              }`}
-          >
-            <SettingsIcon size={18} /> Global Settings
-          </button>
+
 
           <button
             onClick={() => setActiveTab("upload")}
@@ -223,72 +166,7 @@ export default function AdminDashboardClient({ initialSettings, initialMemories 
         {/* Tab Contents */}
         <main className="flex-1 bg-neutral-900/30 border border-neutral-800/80 rounded-2xl p-6 md:p-8">
 
-          {/* Tab 1: Global Settings */}
-          {activeTab === "settings" && (
-            <form onSubmit={handleSaveSettings} className="space-y-6">
-              <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-300 to-amber-200">
-                Global Settings Settings
-              </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-400 uppercase mb-2">Website Title</label>
-                  <input
-                    type="text"
-                    value={settings.title}
-                    onChange={(e) => setSettings({ ...settings, title: e.target.value })}
-                    required
-                    className="w-full h-11 px-4 bg-black/40 border border-neutral-800 rounded-xl focus:border-pink-500 focus:outline-none transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-400 uppercase mb-2">Days Celebrated</label>
-                  <input
-                    type="number"
-                    value={settings.daysCelebrated}
-                    onChange={(e) => setSettings({ ...settings, daysCelebrated: Number(e.target.value) })}
-                    required
-                    className="w-full h-11 px-4 bg-black/40 border border-neutral-800 rounded-xl focus:border-pink-500 focus:outline-none transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase mb-2">Hero Subtitle</label>
-                <input
-                  type="text"
-                  value={settings.subtitle}
-                  onChange={(e) => setSettings({ ...settings, subtitle: e.target.value })}
-                  required
-                  className="w-full h-11 px-4 bg-black/40 border border-neutral-800 rounded-xl focus:border-pink-500 focus:outline-none transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase mb-2">Handwritten Letter Text</label>
-                <textarea
-                  rows={8}
-                  value={settings.letterText}
-                  onChange={(e) => setSettings({ ...settings, letterText: e.target.value })}
-                  required
-                  className="w-full p-4 bg-black/40 border border-neutral-800 rounded-xl focus:border-pink-500 focus:outline-none transition-colors leading-relaxed font-serif text-lg"
-                />
-              </div>
-
-              {settingsMsg && (
-                <p className="text-sm font-semibold tracking-wide">{settingsMsg}</p>
-              )}
-
-              <button
-                type="submit"
-                disabled={settingsLoading}
-                className="px-6 h-12 bg-pink-600 hover:bg-pink-500 rounded-xl font-bold tracking-wider transition-all cursor-pointer shadow-lg disabled:opacity-50"
-              >
-                {settingsLoading ? "Saving Settings..." : "Save Settings"}
-              </button>
-            </form>
-          )}
 
           {/* Tab 2: Upload new Media */}
           {activeTab === "upload" && (

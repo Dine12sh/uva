@@ -2,15 +2,14 @@
   "name": "uva",
   "version": "0.1.0",
   "private": true,
+  "description": "UVA is a modern Next.js + TypeScript web application deployed on Vercel with a responsive user experience.",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "postinstall": "prisma generate"
+    "lint": "eslint"
   },
   "dependencies": {
-    "@prisma/client": "^5.10.0",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.40.0",
     "gsap": "^3.15.0",
@@ -33,7 +32,6 @@
     "@types/three": "^0.184.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
-    "prisma": "^5.10.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

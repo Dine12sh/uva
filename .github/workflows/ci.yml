@@ -16,6 +16,7 @@ concurrency:
 env:
   NODE_VERSION: "22"
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  DIRECT_URL: ${{ secrets.DIRECT_URL || secrets.DATABASE_URL }}
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
   ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
 

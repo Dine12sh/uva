@@ -56,7 +56,7 @@ export default function FloatingMemoryWall() {
               delay: photo.delay * 0.3,
             }
           }}
-          className="absolute w-28 sm:w-36 bg-white/90 p-2 pb-4 shadow-xl border border-pink-200/20 rounded-sm pointer-events-auto hover:opacity-90 hover:z-20 hover:scale-[1.1] transition-all duration-300 cursor-grab active:cursor-grabbing"
+          className="absolute w-28 sm:w-36 bg-white/5 backdrop-blur-sm p-2 pb-4 shadow-2xl border border-white/10 rounded-sm pointer-events-auto hover:opacity-90 hover:z-20 hover:scale-[1.15] transition-all duration-700 cursor-grab active:cursor-grabbing"
         >
           <div className="relative aspect-square w-full overflow-hidden bg-zinc-800 rounded-xs">
             <img
@@ -66,7 +66,7 @@ export default function FloatingMemoryWall() {
               draggable={false}
             />
           </div>
-          <div className="h-4 mt-2 bg-gradient-to-r from-zinc-200 to-zinc-300/30 rounded-xs" />
+          <div className="h-4 mt-2 bg-gradient-to-r from-white/10 to-transparent rounded-xs" />
         </motion.div>
       ))}
     </div>

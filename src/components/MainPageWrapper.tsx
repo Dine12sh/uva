@@ -5,8 +5,8 @@ import Lenis from "lenis";
 import IntroScreen from "./IntroScreen";
 import CelebrationEngine from "./CelebrationEngine";
 import FloatingMemoryWall from "./FloatingMemoryWall";
+import AtmosphericBackground from "./AtmosphericBackground";
 import HeroSection from "./HeroSection";
-import LiveMemoryCounter from "./LiveMemoryCounter";
 import Timeline from "./Timeline";
 import MemoryGallery from "./MemoryGallery";
 import VideoSection from "./VideoSection";
@@ -15,18 +15,13 @@ import WishesLetter from "./WishesLetter";
 import FinalSurprise from "./FinalSurprise";
 import { useMusicStore } from "../store/useMusicStore";
 import { Volume2, VolumeX, Play, Pause } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface MainPageWrapperProps {
-  settings: {
-    title: string;
-    subtitle: string;
-    letterText: string;
-    daysCelebrated: number;
-  };
   memories: any[];
 }
 
-export default function MainPageWrapper({ settings, memories }: MainPageWrapperProps) {
+export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
   const [showIntro, setShowIntro] = useState(true);
   const { isPlaying, isMuted, volume, setPlaying, setMuted, setVolume } = useMusicStore();
 
@@ -57,20 +52,27 @@ export default function MainPageWrapper({ settings, memories }: MainPageWrapperP
       {/* Global Canvas celebration engine */}
       <CelebrationEngine />
 
-      {showIntro ? (
-        <IntroScreen onComplete={() => setShowIntro(false)} />
-      ) : (
-        <div className="relative min-h-screen bg-neutral-950 text-white selection:bg-pink-500 selection:text-white overflow-x-hidden">
-          {/* Infinite Drifting Photo Wall in background */}
-          <FloatingMemoryWall />
+      <AnimatePresence mode="wait">
+        {showIntro ? (
+          <IntroScreen key="intro" onComplete={() => setShowIntro(false)} />
+        ) : (
+          <motion.div
+            key="main"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+            className="relative min-h-screen text-white selection:bg-pink-500 selection:text-white overflow-x-hidden bg-transparent"
+          >
+            {/* Atmospheric Background Layer */}
+            <AtmosphericBackground />
+            {/* Infinite Drifting Photo Wall in background */}
+            <FloatingMemoryWall />
 
-          {/* Front sections */}
-          <div className="relative z-10">
+            {/* Front sections */}
+            <div className="relative z-10">
             {/* Hero Section */}
             <HeroSection />
-
-            {/* Statistic Live Counter */}
-            <LiveMemoryCounter daysCelebrated={settings.daysCelebrated} />
 
             {/* Journey Timeline */}
             <Timeline />
@@ -91,7 +93,7 @@ export default function MainPageWrapper({ settings, memories }: MainPageWrapperP
             {/* Sealed handwritten letter wishes */}
             <section className="py-24 px-6 md:px-16 bg-black/50">
               <div className="max-w-3xl mx-auto">
-                <WishesLetter customMessage={settings.letterText} />
+                <WishesLetter customMessage={`Dear Friend,\n\nEvery memory we've shared has made life brighter and more meaningful.\n\nThank you for your kindness, support, laughter, and all the wonderful moments we've created together.\n\nMay this birthday bring happiness, success, peace, good health, and endless reasons to smile.\n\nYou truly deserve the very best.\n\n🎂 Happy Birthday 🎂`} />
               </div>
             </section>
 
@@ -131,8 +133,9 @@ export default function MainPageWrapper({ settings, memories }: MainPageWrapperP
               className="w-16 md:w-24 accent-pink-500 h-[3px] bg-zinc-800 rounded-lg cursor-pointer"
             />
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </>
   );
 }

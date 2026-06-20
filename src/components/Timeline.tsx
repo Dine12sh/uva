@@ -11,46 +11,34 @@ if (typeof window !== "undefined") {
 
 interface TimelineItem {
   section: string;
-  title: string;
   emoji: string;
-  description: string;
   photos: string[];
 }
 
 const timelineData: TimelineItem[] = [
   {
     section: "first_memories",
-    title: "🌸 Beautiful shot",
     emoji: "🌸",
-    description: "The very start of a beautiful friendship. Cherishing the early days and laughing at the smallest things.",
     photos: ["/media/IMG-20251207-WA0025.jpg", "/media/IMG-20251207-WA0035.jpg"],
   },
   {
     section: "beautiful_moments",
-    title: "📸 Unforgettable Memories",
     emoji: "📸",
-    description: "Capturing your gorgeous smile. Unplanned coffee dates, warm talks, and the comfort of just being around you.",
     photos: ["/media/25860_ae_lite_edit (1).jpg", "/media/IMG_20260613_223016.jpg"],
   },
   {
     section: "fun_adventures",
-    title: "🎈 Beautiful Moments",
     emoji: "🎈",
-    description: "Exploring, making spontaneous plans, and traveling through highlights of pure laughter and joy.",
     photos: ["/media/IMG_20260614_144734~2.jpg", "/media/IMG_20260614_180206.jpg"],
   },
   {
     section: "special_days",
-    title: "🌟 Special Days",
     emoji: "🌟",
-    description: "Dressing up, celebrating milestones, and realizing how grateful we are for every single moment shared.",
     photos: ["/media/IMG_20260614_180315.jpg", "/media/IMG_20260614_180739.jpg"],
   },
   {
     section: "unforgettable_memories",
-    title: "💖 Unforgettable Memories",
     emoji: "💖",
-    description: " ",
     photos: ["/media/IMG_20260615_220045.jpg", "/media/IMG-20260108-WA0012.jpg"],
   },
 ];
@@ -94,10 +82,11 @@ export default function Timeline() {
           opacity: 1,
           x: 0,
           scale: 1,
-          duration: 1.0,
+          duration: 1.4,
+          ease: "power3.out",
           scrollTrigger: {
             trigger: card,
-            start: "top 80%",
+            start: "top 85%",
             toggleActions: "play none none reverse",
           },
         }
@@ -116,19 +105,16 @@ export default function Timeline() {
     <section
       id="friendship-timeline"
       ref={containerRef}
-      className="relative w-full py-24 px-6 md:px-16 overflow-hidden bg-black/60"
+      className="relative w-full py-24 px-6 md:px-16 overflow-hidden bg-transparent"
     >
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-20">
           <span className="text-amber-200 text-xs uppercase tracking-widest font-semibold px-4 py-1.5 rounded-full border border-amber-300/20 bg-amber-400/5">
             Our Timeline
           </span>
-          <h2 className="text-3xl md:text-5xl font-bold mt-4 text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-pink-300 to-amber-200">
+          <h2 className="text-3xl md:text-5xl font-serif mt-4 text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-pink-300 to-amber-200 drop-shadow-[0_2px_15px_rgba(255,182,193,0.3)] tracking-wide">
             A Beautiful Friendship Journey
           </h2>
-          <p className="text-zinc-400 max-w-lg mx-auto mt-4 text-sm md:text-base">
-            Rewinding through the key milestones of laughter, trust, and unforgettable days.
-          </p>
         </div>
 
         {/* Timeline Container */}
@@ -159,30 +145,20 @@ export default function Timeline() {
 
                   {/* Card wrapper */}
                   <div className="w-full md:w-1/2 pl-12 md:pl-0 md:px-12">
-                    <div className="timeline-card bg-white/5 border border-white/10 p-6 md:p-8 rounded-2xl backdrop-blur-md hover:border-pink-300/30 transition-all duration-300 shadow-xl group hover:shadow-[0_10px_35px_rgba(183,110,121,0.15)]">
-                      {/* Date / Category */}
-                      <span className="text-pink-300 text-xs font-bold uppercase tracking-wider">
-                        {item.title}
-                      </span>
-
-                      {/* Card Content */}
-                      <p className="text-zinc-300 mt-4 text-sm md:text-base leading-relaxed">
-                        {item.description}
-                      </p>
-
+                    <div className="timeline-card bg-white/5 border border-white/10 p-6 md:p-8 rounded-3xl backdrop-blur-xl hover:bg-white/10 transition-all duration-700 shadow-[0_15px_40px_rgba(0,0,0,0.5)] group hover:shadow-[0_20px_60px_rgba(183,110,121,0.25)] hover:-translate-y-2">
                       {/* Polaroid images deck inside card */}
-                      <div className="mt-6 grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-4">
                         {item.photos.map((photo, pIdx) => (
                           <div
                             key={pIdx}
-                            className="relative aspect-[4/5] overflow-hidden rounded-lg bg-zinc-800 border border-white/5 shadow-md group-hover:scale-[1.03] transition-transform duration-500 cursor-zoom-in"
+                            className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-zinc-800 shadow-[0_15px_30px_rgb(0,0,0,0.4)] group-hover:scale-[1.04] transition-all duration-700 cursor-zoom-in group/photo"
                           >
                             <img
                               src={photo}
                               alt="Memory photo"
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover transform scale-105 group-hover/photo:scale-[1.2] transition-transform duration-[1500ms] ease-out origin-center"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/photo:opacity-100 transition-opacity duration-700 mix-blend-overlay" />
                           </div>
                         ))}
                       </div>
