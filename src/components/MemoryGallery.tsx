@@ -134,6 +134,9 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
     }
   };
 
+  const rotateX = useTransform(mouseY, [-1, 1], [5, -5]);
+  const rotateY = useTransform(mouseX, [-1, 1], [-5, 5]);
+
   if (!mounted) return <div className="min-h-screen bg-black/40" />;
 
   return (
@@ -166,8 +169,8 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
       <motion.div 
         className="relative w-full max-w-[1400px] h-full min-h-[800px] flex items-center justify-center transform-style-preserve-3d"
         style={{
-          rotateX: useTransform(mouseY, [-1, 1], [5, -5]),
-          rotateY: useTransform(mouseX, [-1, 1], [-5, 5]),
+          rotateX: rotateX,
+          rotateY: rotateY,
         }}
       >
         {layout.map((img, idx) => {

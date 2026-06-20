@@ -4,18 +4,23 @@
   "private": true,
   "description": "UVA is a modern Next.js + TypeScript web application deployed on Vercel with a responsive user experience.",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
   },
   "dependencies": {
+    "@prisma/client": "^6.0.0",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.40.0",
     "gsap": "^3.15.0",
     "lenis": "^1.3.23",
     "lucide-react": "^1.20.0",
     "next": "16.2.9",
+    "prisma": "^6.0.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.79.0",
