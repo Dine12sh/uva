@@ -25,6 +25,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isExploding, setIsExploding] = useState(false);
   const [isExplosionFinished, setIsExplosionFinished] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const heartRef = useRef<HTMLDivElement>(null);
@@ -35,9 +36,15 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
   const { triggerBalloons, triggerFireworks, triggerHearts, triggerConfetti } = useCelebrationStore();
 
   const handleNext = () => {
+    if (isTransitioning) return; // Prevent double triggers
+    setIsTransitioning(true);
+    
     if (currentIndex < MEMORIES.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       if (currentIndex === 1) triggerBalloons();
+      
+      // Unlock after transition completes
+      setTimeout(() => setIsTransitioning(false), 800);
     } else {
       setIsExploding(true);
       const { setExploding } = useCelebrationStore.getState();
@@ -95,8 +102,8 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
       // 3. Expanding GSAP Heart (Dynamic Scale based on Viewport)
       if (heartRef.current) {
-        // Reduced the massive 25/15 scale to a much more reasonable cinematic 8/5 scale
-        const targetScale = window.innerWidth > 768 ? 8 : 5;
+        // Enforce specific scale limits requested
+        const targetScale = window.innerWidth > 768 ? 14 : 10;
         tl.fromTo(heartRef.current, 
           { scale: 1, opacity: 1 },
           {
@@ -117,7 +124,8 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
           opacity: 0,
           scale: 1.1,
           duration: 0.5,
-          ease: "power2.in"
+          ease: "power2.in",
+          display: "none" // Force removal from DOM render flow
         }, "+=0.3");
       }
 
@@ -214,6 +222,8 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
                 url={MEMORIES[currentIndex].url}
                 caption={MEMORIES[currentIndex].caption}
                 isFinal={currentIndex === MEMORIES.length - 1}
+                disabled={isTransitioning}
+                isPriority={currentIndex === 0}
                 onNext={handleNext}
               />
             </motion.div>
@@ -233,7 +243,8 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
           {/* 2. Expanding Pink Heart */}
           <div
             ref={heartRef}
-            className="absolute z-[100] pointer-events-none opacity-0 flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-tr from-rose-600 to-pink-500 shadow-[0_0_100px_rgba(244,63,94,1)]"
+            className="absolute z-[100] pointer-events-none flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-tr from-rose-600 to-pink-500 shadow-[0_0_100px_rgba(244,63,94,1)]"
+            style={{ opacity: 0, willChange: 'transform, opacity', transform: 'translateZ(0)' }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16 text-white drop-shadow-2xl">
               <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
@@ -243,17 +254,19 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
           {/* 3. Image Overlay (Revealed inside the pink explosion) */}
           <div 
             ref={overlayImageRef}
-            className="absolute z-[105] pointer-events-none opacity-0 flex items-center justify-center w-[90vw] h-[60vh] md:w-[60vw] md:h-[80vh] rounded-2xl overflow-hidden shadow-[0_0_80px_rgba(255,255,255,0.4)] border-4 border-white/20"
+            className="absolute z-[105] pointer-events-none flex items-center justify-center w-[90vw] h-[60vh] md:w-[60vw] md:h-[80vh] rounded-2xl overflow-hidden shadow-[0_0_80px_rgba(255,255,255,0.4)] border-4 border-white/20"
+            style={{ opacity: 0, willChange: 'transform, opacity', transform: 'translateZ(0)' }}
           >
             <Image 
               src="/media/IMG-20251207-WA0025.jpg"
               alt="Overlay Memory Snapshot"
               fill
+              priority
+              className="object-cover opacity-60 mix-blend-screen"
               unoptimized={true}
-              className="object-cover"
               onError={(e) => {
-                // Fallback image
-                e.currentTarget.style.display = 'none';
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
               }}
             />
           </div>

@@ -9,6 +9,8 @@ interface PolaroidScratchCardProps {
   url: string;
   caption: string;
   isFinal: boolean;
+  disabled?: boolean;
+  isPriority?: boolean;
   onNext: () => void;
 }
 
@@ -17,6 +19,8 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
   url,
   caption,
   isFinal,
+  disabled,
+  isPriority,
   onNext,
 }: PolaroidScratchCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -169,6 +173,9 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
+        aria-label="Scratchable Memory Card"
+        role="button"
+        tabIndex={0}
       >
         {/* The Polaroid Card */}
         <motion.div
@@ -197,6 +204,7 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
               src={url}
               alt="Memory"
               fill
+              priority={isPriority}
               sizes="(max-width: 768px) 16rem, 20rem"
               className="object-cover"
               onError={(e) => {
@@ -243,8 +251,10 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
             className="absolute -bottom-16 md:-bottom-24 z-40 scale-90 md:scale-100"
           >
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              disabled={disabled}
+              whileTap={!disabled ? { scale: 0.95 } : {}}
               onPointerDown={(e) => {
+                if (disabled) return;
                 // Immediate visual feedback bypasses React/Framer event loop lag
                 e.currentTarget.style.transform = "scale(0.95)";
                 e.currentTarget.style.boxShadow = "0 0 60px rgba(244,63,94,1)";
@@ -255,7 +265,10 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
                 }, 100);
               }}
               onClick={onNext}
-              className={`px-8 py-4 rounded-full font-bold text-lg text-white shadow-2xl transition-all duration-300 hover:scale-105 ${
+              aria-label={isFinal ? "Open My Heart" : "Next Memory"}
+              className={`px-8 py-4 rounded-full font-bold text-lg text-white shadow-2xl transition-all duration-300 ${!disabled && 'hover:scale-105'} ${
+                disabled ? "opacity-50 cursor-not-allowed" : ""
+              } ${
                 isFinal
                   ? "bg-gradient-to-r from-red-500 to-pink-600 shadow-[0_0_40px_rgba(244,63,94,0.8)] animate-pulse"
                   : "bg-white/10 border border-white/20 backdrop-blur-md hover:bg-white/20 hover:border-pink-300 shadow-[0_0_20px_rgba(255,255,255,0.1)]"

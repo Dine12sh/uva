@@ -105,22 +105,49 @@ export function HeartParticleEngine() {
         }
       }
 
-      // Ambient Particle Spawner
-      if (particles.length < maxParticles && frameCount % (isMobile ? 15 : 6) === 0) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: canvas.height + 20,
-          baseX: Math.random() * canvas.width,
-          baseY: canvas.height + 20,
-          z: Math.random() * 2 + 0.5,
-          vx: (Math.random() - 0.5) * 1,
-          vy: -Math.random() * 1.5 - 0.5, // Slower float up
-          life: 0,
-          maxLife: 200 + Math.random() * 200,
-          size: Math.random() * 3 + 1.5, // Slightly smaller
-          color: `hsl(${330 + Math.random() * 30}, 100%, 70%)`,
-          type: Math.random() > 0.4 ? "sparkle" : "heart",
-        });
+      // Ambient Particle Spawner with Strict Limits
+      const mobileHeartMax = 20;
+      const mobileSparkleMax = 25;
+      const desktopHeartMax = 50;
+      const desktopSparkleMax = 60;
+
+      const maxHearts = isMobile ? mobileHeartMax : desktopHeartMax;
+      const maxSparkles = isMobile ? mobileSparkleMax : desktopSparkleMax;
+
+      let currentHearts = 0;
+      let currentSparkles = 0;
+      for (const p of particles) {
+        if (p.type === "heart") currentHearts++;
+        else currentSparkles++;
+      }
+
+      if (frameCount % (isMobile ? 15 : 6) === 0) {
+        const canSpawnHeart = currentHearts < maxHearts;
+        const canSpawnSparkle = currentSparkles < maxSparkles;
+
+        if (canSpawnHeart || canSpawnSparkle) {
+          let spawnType: "heart" | "sparkle" = "heart";
+          if (canSpawnHeart && canSpawnSparkle) {
+            spawnType = Math.random() > 0.4 ? "sparkle" : "heart";
+          } else if (canSpawnSparkle) {
+            spawnType = "sparkle";
+          }
+
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: canvas.height + 20,
+            baseX: Math.random() * canvas.width,
+            baseY: canvas.height + 20,
+            z: Math.random() * 2 + 0.5,
+            vx: (Math.random() - 0.5) * 1,
+            vy: -Math.random() * 1.5 - 0.5, // Slower float up
+            life: 0,
+            maxLife: 200 + Math.random() * 200,
+            size: Math.random() * 3 + 1.5, // Slightly smaller
+            color: `hsl(${330 + Math.random() * 30}, 100%, 70%)`,
+            type: spawnType,
+          });
+        }
       }
 
       const centerX = canvas.width / 2;
