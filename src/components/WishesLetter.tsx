@@ -134,7 +134,7 @@ export default function WishesLetter({ customMessage }: WishesLetterProps) {
             </div>
 
             {/* Letter Text (Handwritten script) */}
-            <div className="relative min-h-[300px] whitespace-pre-wrap font-serif text-xl md:text-2xl leading-relaxed text-[#5C4A37] tracking-wide font-medium">
+            <div className="relative max-h-[50vh] overflow-y-auto custom-scrollbar pr-4 whitespace-pre-wrap font-serif text-xl md:text-2xl leading-relaxed text-[#5C4A37] tracking-wide font-medium">
               {typedText}
               {!typingDone && <span className="typewriter-cursor" />}
             </div>

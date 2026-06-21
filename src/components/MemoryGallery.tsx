@@ -173,6 +173,7 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
                     placeholder="blur"
                     blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
                     className="object-cover transform transition-transform duration-[2000ms] ease-out group-hover:scale-110 brightness-90 group-hover:brightness-110"
+                    unoptimized
                   />
                   
                   {/* Glass Reflection Sweep */}
@@ -271,6 +272,7 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
                   className="max-w-[90vw] max-h-[80vh] w-auto h-auto object-contain rounded-sm shadow-[0_30px_80px_rgba(0,0,0,0.8)] border border-white/10"
                   placeholder="blur"
                   blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+                  unoptimized
                   priority
                 />
               </motion.div>
