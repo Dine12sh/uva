@@ -22,6 +22,7 @@ const MEMORIES = [
 export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode }: MemoryRevealHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isExploding, setIsExploding] = useState(false);
+  const [isExplosionFinished, setIsExplosionFinished] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const heartRef = useRef<HTMLDivElement>(null);
@@ -37,6 +38,8 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       if (currentIndex === 1) triggerBalloons();
     } else {
       setIsExploding(true);
+      const { setExploding } = useCelebrationStore.getState();
+      setExploding(true);
     }
   };
 
@@ -50,10 +53,10 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
     const tl = gsap.timeline({
       onComplete: () => {
-        // Wait a tiny bit for the overlay to be enjoyed before auto-scrolling
+        setIsExplosionFinished(true);
         setTimeout(() => {
           onExplode();
-        }, 1500);
+        }, 800);
       },
     });
 
@@ -75,21 +78,17 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
     // 2. Lens Flare Flash
     if (lensFlareRef.current) {
-      tl.to(lensFlareRef.current, {
-        opacity: 1,
-        scale: 5,
-        duration: 0.3,
-        ease: "power2.out",
-        yoyo: true,
-        repeat: 1
-      }, 0);
+      gsap.fromTo(lensFlareRef.current,
+        { opacity: 1, scale: 1 },
+        { opacity: 0, scale: 10, duration: 0.7, ease: "power4.out" }
+      );
     }
 
     // 3. Expanding GSAP Heart (Scale to 30)
     if (heartRef.current) {
       tl.to(heartRef.current, {
         scale: 30,
-        opacity: 1,
+        opacity: 0,
         duration: 1.5,
         ease: "power4.inOut",
       }, 0);
@@ -99,7 +98,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
     if (overlayImageRef.current) {
       tl.fromTo(overlayImageRef.current, 
         { opacity: 0, scale: 0.8 }, 
-        { opacity: 1, scale: 1, duration: 1.5, ease: "power3.out" }, 
+        { opacity: 0, scale: 1, duration: 1.5, ease: "power3.out" }, 
       0.5);
     }
 
@@ -202,62 +201,77 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       </div>
 
       {/* EXPLOSION DOM ELEMENTS */}
-      
-      {/* 1. Lens Flare */}
-      <div 
-        ref={lensFlareRef}
-        className="absolute z-[90] pointer-events-none opacity-0 w-[200vw] h-[200vw] rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,1)_0%,rgba(255,192,203,0.8)_10%,transparent_60%)] mix-blend-screen"
-      />
+      {!isExplosionFinished && (
+        <>
+          {/* 1. Lens Flare */}
+          <div 
+            ref={lensFlareRef}
+            className="absolute z-[90] pointer-events-none opacity-0 w-[50vw] h-[50vw] rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,1)_0%,rgba(255,192,203,0.8)_20%,transparent_70%)] mix-blend-screen"
+          />
 
-      {/* 2. Expanding Pink Heart */}
-      <div
-        ref={heartRef}
-        className="absolute z-[100] pointer-events-none opacity-0 flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-tr from-rose-600 to-pink-500 shadow-[0_0_100px_rgba(244,63,94,1)]"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16 text-white drop-shadow-2xl">
-          <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
-        </svg>
-      </div>
+          {/* 2. Expanding Pink Heart */}
+          <div
+            ref={heartRef}
+            className="absolute z-[100] pointer-events-none opacity-0 flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-tr from-rose-600 to-pink-500 shadow-[0_0_100px_rgba(244,63,94,1)]"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16 text-white drop-shadow-2xl">
+              <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
+            </svg>
+          </div>
 
-      {/* 3. Image Overlay (Revealed inside the pink explosion) */}
-      <div 
-        ref={overlayImageRef}
-        className="absolute z-[105] pointer-events-none opacity-0 flex items-center justify-center w-[90vw] h-[60vh] md:w-[60vw] md:h-[80vh] rounded-2xl overflow-hidden shadow-[0_0_80px_rgba(255,255,255,0.4)] border-4 border-white/20"
-      >
-        <Image 
-          src="/media/IMG-20251207-WA0025.jpg"
-          alt="Overlay Memory"
-          fill
-          className="object-cover"
-        />
-      </div>
+          {/* 3. Image Overlay (Revealed inside the pink explosion) */}
+          <div 
+            ref={overlayImageRef}
+            className="absolute z-[105] pointer-events-none opacity-0 flex items-center justify-center w-[90vw] h-[60vh] md:w-[60vw] md:h-[80vh] rounded-2xl overflow-hidden shadow-[0_0_80px_rgba(255,255,255,0.4)] border-4 border-white/20"
+          >
+            <Image 
+              src="/media/IMG-20251207-WA0025.jpg"
+              alt="Overlay Memory"
+              fill
+              className="object-cover"
+              onError={(e) => {
+                // Fallback image
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
 
-      {/* 4. Flying Particles Container */}
-      <div ref={particlesRef} className="absolute inset-0 z-[110] pointer-events-none flex items-center justify-center">
-        {isExploding && [...Array(60)].map((_, i) => {
-          const type = i % 4; // 0: Heart, 1: Spark, 2: Petal, 3: Photo
-          
-          if (type === 0) {
-            return <span key={i} className="absolute text-4xl drop-shadow-lg opacity-0">💖</span>;
-          }
-          if (type === 1) {
-            return <div key={i} className="absolute w-3 h-3 bg-yellow-300 rounded-full shadow-[0_0_20px_#fde047] opacity-0" />;
-          }
-          if (type === 2) {
-            return <div key={i} className="absolute w-6 h-6 bg-rose-600 rounded-full rounded-tr-none blur-[1px] opacity-0" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />;
-          }
-          if (type === 3) {
-            return (
-              <div key={i} className="absolute w-24 h-24 p-1 bg-white shadow-2xl opacity-0 rotate-12">
-                <div className="relative w-full h-full bg-black">
-                  <Image src={MEMORIES[i % MEMORIES.length].url} alt="flying photo" fill className="object-cover" />
-                </div>
-              </div>
-            );
-          }
-          return null;
-        })}
-      </div>
+          {/* 4. Flying Particles Container */}
+          <div ref={particlesRef} className="absolute inset-0 z-[110] pointer-events-none flex items-center justify-center">
+            {isExploding && [...Array(60)].map((_, i) => {
+              const type = i % 4; // 0: Heart, 1: Spark, 2: Petal, 3: Photo
+              
+              if (type === 0) {
+                return <span key={i} className="absolute text-4xl drop-shadow-lg opacity-0">💖</span>;
+              }
+              if (type === 1) {
+                return <div key={i} className="absolute w-3 h-3 bg-yellow-300 rounded-full shadow-[0_0_20px_#fde047] opacity-0" />;
+              }
+              if (type === 2) {
+                return <div key={i} className="absolute w-6 h-6 bg-rose-600 rounded-full rounded-tr-none blur-[1px] opacity-0" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />;
+              }
+              if (type === 3) {
+                return (
+                  <div key={i} className="absolute w-24 h-24 p-1 bg-white shadow-2xl opacity-0 rotate-12">
+                    <div className="relative w-full h-full bg-black">
+                      <Image 
+                        src={MEMORIES[i % MEMORIES.length].url} 
+                        alt="flying photo" 
+                        fill 
+                        className="object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }} 
+                      />
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })}
+          </div>
+        </>
+      )}
 
     </div>
   );

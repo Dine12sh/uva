@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { Volume2, VolumeX, Play, Pause } from "lucide-react";
 import { useMusicStore } from "../store/useMusicStore";
+import { useCelebrationStore } from "../store/useCelebrationStore";
 
 // Static imports for initial view components
 import CountdownIntro from "./CountdownIntro";
@@ -35,6 +36,7 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
   const [showMain, setShowMain] = useState(false);
   
   const { isPlaying, isMuted, volume, setPlaying, setMuted, setVolume } = useMusicStore();
+  const { isExploding } = useCelebrationStore();
 
   // Handle flow transitions
   const handleCountdownComplete = () => {
@@ -136,7 +138,7 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
             </div>
 
             {/* Floating Premium Music Bar */}
-            <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-white/5 border border-white/10 backdrop-blur-md px-4 py-2.5 rounded-full shadow-2xl transition-all duration-300 hover:border-pink-300/30">
+            <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-white/5 border border-white/10 backdrop-blur-md px-4 py-2.5 rounded-full shadow-2xl transition-all duration-500 hover:border-pink-300/30 ${isExploding ? "opacity-0 pointer-events-none translate-y-10" : "opacity-100"}`}>
               <button
                 onClick={() => setPlaying(!isPlaying)}
                 className="p-3 min-w-[44px] min-h-[44px] flex justify-center items-center rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-500"

@@ -195,6 +195,9 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
               fill
               sizes="(max-width: 768px) 16rem, 20rem"
               className="object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
             />
             {/* Glossy reflection on polaroid photo */}
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none" />
