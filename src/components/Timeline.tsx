@@ -88,6 +88,20 @@ const Timeline = React.memo(function Timeline() {
       const cards = container.querySelectorAll(".timeline-card");
       cards.forEach((card, idx) => {
         const isLeft = idx % 2 === 0;
+        
+        // Eagerly animate the first card without waiting for a tight scroll threshold
+        const triggerOptions = idx === 0 
+          ? {
+              trigger: containerRef.current,
+              start: "top 80%", // Triggers much earlier when the section itself comes into view
+              toggleActions: "play none none reverse",
+            }
+          : {
+              trigger: card,
+              start: "top 85%",
+              toggleActions: "play none none reverse",
+            };
+
         gsap.fromTo(
           card,
           {
@@ -99,13 +113,9 @@ const Timeline = React.memo(function Timeline() {
             opacity: 1,
             x: 0,
             scale: 1,
-            duration: 1.4,
+            duration: 1.0,
             ease: "power3.out",
-            scrollTrigger: {
-              trigger: card,
-              start: "top 85%",
-              toggleActions: "play none none reverse",
-            },
+            scrollTrigger: triggerOptions,
           }
         );
       });
@@ -118,9 +128,9 @@ const Timeline = React.memo(function Timeline() {
     <section
       id="friendship-timeline"
       ref={containerRef}
-      className="relative w-full py-24 px-6 md:px-16 overflow-hidden bg-transparent"
+      className="relative z-[20] w-full py-24 px-6 md:px-16 overflow-hidden bg-transparent"
     >
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto relative z-[25]">
         <div className="text-center mb-20">
           <span className="text-amber-200 text-xs uppercase tracking-widest font-semibold px-4 py-1.5 rounded-full border border-amber-300/20 bg-amber-400/5">
             Our Timeline

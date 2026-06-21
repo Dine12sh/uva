@@ -244,6 +244,16 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
           >
             <motion.button
               whileTap={{ scale: 0.95 }}
+              onPointerDown={(e) => {
+                // Immediate visual feedback bypasses React/Framer event loop lag
+                e.currentTarget.style.transform = "scale(0.95)";
+                e.currentTarget.style.boxShadow = "0 0 60px rgba(244,63,94,1)";
+                setTimeout(() => {
+                  if (e.currentTarget) {
+                    e.currentTarget.style.transform = "scale(1)";
+                  }
+                }, 100);
+              }}
               onClick={onNext}
               className={`px-8 py-4 rounded-full font-bold text-lg text-white shadow-2xl transition-all duration-300 hover:scale-105 ${
                 isFinal

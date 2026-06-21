@@ -194,7 +194,8 @@ export default function CelebrationEngine() {
     const isMobile = window.innerWidth < 768;
     const isHeartBurst = !isMobile && Math.random() > 0.6; // 40% chance of a heart burst on desktop
     
-    const count = isMobile ? 40 + Math.floor(Math.random() * 20) : 80 + Math.floor(Math.random() * 60);
+    // Significantly reduced particle counts so fireworks don't obscure the Timeline content
+    const count = isMobile ? 20 + Math.floor(Math.random() * 15) : 40 + Math.floor(Math.random() * 30);
     
     for (let i = 0; i < count; i++) {
       let vx, vy;
@@ -228,15 +229,15 @@ export default function CelebrationEngine() {
 
     // Sparkle explosion / Golden trails
     if (Math.random() > 0.4) {
-      const sparkleCount = isMobile ? 10 : 30;
+      const sparkleCount = isMobile ? 5 : 15;
       for (let i = 0; i < sparkleCount; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 0.5 + Math.random() * (isMobile ? 2 : 4);
         particlesRef.current.push({
-          x,
-          y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
+          x: isFinite(x) ? x : 0,
+          y: isFinite(y) ? y : 0,
+          vx: isFinite(Math.cos(angle) * speed) ? Math.cos(angle) * speed : 0,
+          vy: isFinite(Math.sin(angle) * speed) ? Math.sin(angle) * speed : 0,
           color: Math.random() > 0.5 ? "#FFF7C2" : "#D4AF37", // bright gold or luxury gold
           radius: 1 + Math.random(),
           alpha: 1,

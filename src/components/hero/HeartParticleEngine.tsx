@@ -81,7 +81,7 @@ export function HeartParticleEngine() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       frameCount++;
 
-      const maxParticles = isMobile ? 40 : 100;
+      const maxParticles = isMobile ? 20 : 50;
       const particles = particlesRef.current;
 
       // Smooth mouse interpolation
@@ -95,7 +95,7 @@ export function HeartParticleEngine() {
             mouseRef.current.x, mouseRef.current.y, 0,
             mouseRef.current.x, mouseRef.current.y, 300
           );
-          glow.addColorStop(0, "rgba(244, 63, 94, 0.15)");
+          glow.addColorStop(0, "rgba(244, 63, 94, 0.08)"); // Reduced glow intensity
           glow.addColorStop(1, "rgba(244, 63, 94, 0)");
           ctx.fillStyle = glow;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -105,7 +105,7 @@ export function HeartParticleEngine() {
       }
 
       // Ambient Particle Spawner
-      if (particles.length < maxParticles && frameCount % (isMobile ? 10 : 3) === 0) {
+      if (particles.length < maxParticles && frameCount % (isMobile ? 15 : 6) === 0) {
         particles.push({
           x: Math.random() * canvas.width,
           y: canvas.height + 20,
@@ -113,10 +113,10 @@ export function HeartParticleEngine() {
           baseY: canvas.height + 20,
           z: Math.random() * 2 + 0.5,
           vx: (Math.random() - 0.5) * 1,
-          vy: -Math.random() * 2 - 0.5,
+          vy: -Math.random() * 1.5 - 0.5, // Slower float up
           life: 0,
           maxLife: 200 + Math.random() * 200,
-          size: Math.random() * 4 + 2,
+          size: Math.random() * 3 + 1.5, // Slightly smaller
           color: `hsl(${330 + Math.random() * 30}, 100%, 70%)`,
           type: Math.random() > 0.4 ? "sparkle" : "heart",
         });
@@ -155,7 +155,7 @@ export function HeartParticleEngine() {
         let alpha = 1;
         if (p.life < 30) alpha = p.life / 30;
         else if (p.life > p.maxLife - 60) alpha = (p.maxLife - p.life) / 60;
-        alpha = Math.max(0, Math.min(1, alpha)) * 0.8;
+        alpha = Math.max(0, Math.min(1, alpha)) * 0.25; // Caps global opacity to 0.25 so it sits firmly in background
 
         if (p.type === "heart") {
           drawHeart(ctx, p.x, p.y, (p.size || 2) * 1.5, alpha, p.color);

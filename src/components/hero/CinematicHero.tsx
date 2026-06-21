@@ -9,17 +9,16 @@ export function CinematicHero() {
   const [introComplete, setIntroComplete] = useState(false);
 
   const handleExplosion = () => {
-    // Scroll down smoothly to the next section (e.g., MemoryGallery)
-    // Wait for the GSAP explosion animation to visually obscure the screen
+    // Scroll down smoothly to the next section immediately
     setTimeout(() => {
-      const target = document.getElementById("memory-timeline");
+      const target = document.getElementById("friendship-timeline");
       if (target) {
         target.scrollIntoView({ behavior: "smooth" });
       } else {
         // Fallback if ID doesn't exist yet, scroll down 100vh
         window.scrollBy({ top: window.innerHeight, behavior: "smooth" });
       }
-    }, 1000);
+    }, 100); // Only a 100ms micro-delay to allow DOM to register the Timeline mount
   };
 
   return (

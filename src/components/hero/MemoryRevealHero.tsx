@@ -52,12 +52,13 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
     triggerHearts();
 
     let ctx = gsap.context(() => {
+      // Fire onExplode immediately so the Timeline section mounts right away
+      // instead of waiting for the animation to finish
+      onExplode();
+
       const tl = gsap.timeline({
         onComplete: () => {
           setIsExplosionFinished(true);
-          setTimeout(() => {
-            onExplode();
-          }, 800);
         },
       });
 
