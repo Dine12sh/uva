@@ -262,6 +262,9 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
                 e.currentTarget.style.transform = "scale(0.95)";
                 e.currentTarget.style.boxShadow = "0 0 60px rgba(244,63,94,1)";
               }}
+              onClick={() => {
+                if (!disabled) onNext();
+              }}
               aria-label={isFinal ? "Open My Heart" : "Next Memory"}
               className={`px-8 py-4 rounded-full font-bold text-lg text-white shadow-2xl transition-all duration-300 ${!disabled && 'hover:scale-105'} ${
                 disabled ? "opacity-50 cursor-not-allowed" : ""
