@@ -105,8 +105,8 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
     // 5. Flying Particles (Photos, Petals, Hearts, Sparks)
     if (particlesRef.current) {
-      const particles = particlesRef.current.children;
-      gsap.fromTo(particles, 
+      const particles = Array.from(particlesRef.current.children);
+      tl.fromTo(particles, 
         { x: 0, y: 0, scale: 0, opacity: 1 },
         {
           x: () => gsap.utils.random(-window.innerWidth, window.innerWidth),
