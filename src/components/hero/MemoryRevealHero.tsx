@@ -87,13 +87,16 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
       // 3. Expanding GSAP Heart (Dynamic Scale based on Viewport)
       if (heartRef.current) {
-        const targetScale = window.innerWidth > 768 ? 25 : 15;
-        tl.to(heartRef.current, {
-          scale: targetScale,
-          opacity: 0,
-          duration: 1.5,
-          ease: "power4.inOut",
-        }, 0);
+        // Reduced the massive 25/15 scale to a much more reasonable cinematic 8/5 scale
+        const targetScale = window.innerWidth > 768 ? 8 : 5;
+        tl.fromTo(heartRef.current, 
+          { scale: 1, opacity: 1 },
+          {
+            scale: targetScale,
+            opacity: 0,
+            duration: 1.5,
+            ease: "power4.inOut",
+          }, 0);
       }
 
       // 4. Image Overlay fading in and then fading out
