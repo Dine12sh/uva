@@ -136,9 +136,12 @@ export default function CelebrationEngine() {
   }, [confettiTriggerCount]);
 
   const launchFireworks = (count: number) => {
+    const isMobile = window.innerWidth < 768;
+    const actualCount = isMobile ? Math.max(1, Math.floor(count * 0.6)) : count;
+    
     const width = window.innerWidth;
     const height = window.innerHeight;
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < actualCount; i++) {
       rocketsRef.current.push({
         x: Math.random() * width,
         y: height + 20,
@@ -188,38 +191,56 @@ export default function CelebrationEngine() {
   };
 
   const createExplosion = (x: number, y: number, color: string) => {
-    const count = 80 + Math.floor(Math.random() * 40);
+    const isMobile = window.innerWidth < 768;
+    const isHeartBurst = !isMobile && Math.random() > 0.6; // 40% chance of a heart burst on desktop
+    
+    const count = isMobile ? 40 + Math.floor(Math.random() * 20) : 80 + Math.floor(Math.random() * 60);
+    
     for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 2 + Math.random() * 6;
+      let vx, vy;
+      
+      if (isHeartBurst) {
+        // Parametric equation for a heart
+        const t = (i / count) * Math.PI * 2;
+        const scale = 0.2 + Math.random() * 0.1;
+        vx = 16 * Math.pow(Math.sin(t), 3) * scale;
+        vy = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) * scale;
+      } else {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2 + Math.random() * 6;
+        vx = Math.cos(angle) * speed;
+        vy = Math.sin(angle) * speed;
+      }
+
       particlesRef.current.push({
         x,
         y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
+        vx,
+        vy,
         color,
-        radius: 1.5 + Math.random() * 2,
+        radius: 1.5 + Math.random() * (isMobile ? 1.5 : 2.5),
         alpha: 1,
         decay: 0.015 + Math.random() * 0.015,
-        gravity: 0.06,
+        gravity: isHeartBurst ? 0.02 : 0.06,
         trail: []
       });
     }
 
-    // Sparkle explosion
+    // Sparkle explosion / Golden trails
     if (Math.random() > 0.4) {
-      for (let i = 0; i < 20; i++) {
+      const sparkleCount = isMobile ? 10 : 30;
+      for (let i = 0; i < sparkleCount; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = 0.5 + Math.random() * 2;
+        const speed = 0.5 + Math.random() * (isMobile ? 2 : 4);
         particlesRef.current.push({
           x,
           y,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          color: "#FFF7C2", // gold sparkles
-          radius: 1,
+          color: Math.random() > 0.5 ? "#FFF7C2" : "#D4AF37", // bright gold or luxury gold
+          radius: 1 + Math.random(),
           alpha: 1,
-          decay: 0.03 + Math.random() * 0.03,
+          decay: 0.02 + Math.random() * 0.03,
           gravity: 0.01,
           trail: []
         });

@@ -63,10 +63,14 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
       // 1. Camera Shake on the main wrapper (200-300ms)
       if (containerRef.current) {
+        const isMobile = window.innerWidth < 768;
+        const shakeAmp = isMobile ? 5 : 15;
+        const rotAmp = isMobile ? 1 : 2;
+        
         gsap.to(containerRef.current, {
-          x: () => gsap.utils.random(-15, 15),
-          y: () => gsap.utils.random(-15, 15),
-          rotation: () => gsap.utils.random(-2, 2),
+          x: () => gsap.utils.random(-shakeAmp, shakeAmp),
+          y: () => gsap.utils.random(-shakeAmp, shakeAmp),
+          rotation: () => gsap.utils.random(-rotAmp, rotAmp),
           duration: 0.05,
           repeat: 5, // 250ms of shake
           yoyo: true,

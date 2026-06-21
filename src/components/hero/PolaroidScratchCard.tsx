@@ -157,10 +157,14 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
 
   return (
     <div className="relative flex flex-col items-center">
-      {/* Container matches Polaroid aspect ratio */}
-      <div 
+      {/* Main Card Container */}
+      <motion.div 
         ref={containerRef}
-        className="relative w-72 h-[400px] md:w-80 md:h-[450px] touch-none select-none z-20"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeInOut" }}
+        className="relative w-[min(90vw,340px)] md:w-[28vw] md:min-w-[320px] md:max-w-[420px] aspect-[4/5] rounded-xl overflow-visible select-none"
+        style={{ transformStyle: "preserve-3d" }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -226,7 +230,7 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
             />
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
 
       {/* Action Button (Next Memory or Finale) */}
       <AnimatePresence>
@@ -238,16 +242,17 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
             transition={{ type: "spring", stiffness: 120, damping: 12 }}
             className="absolute -bottom-24 z-40"
           >
-            <button
+            <motion.button
+              whileTap={{ scale: 0.95 }}
               onClick={onNext}
-              className={`px-8 py-4 rounded-full font-bold text-lg text-white shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 ${
+              className={`px-8 py-4 rounded-full font-bold text-lg text-white shadow-2xl transition-all duration-300 hover:scale-105 ${
                 isFinal
                   ? "bg-gradient-to-r from-red-500 to-pink-600 shadow-[0_0_40px_rgba(244,63,94,0.8)] animate-pulse"
                   : "bg-white/10 border border-white/20 backdrop-blur-md hover:bg-white/20 hover:border-pink-300 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
               }`}
             >
               {isFinal ? "💖 Open My Heart" : "Next Memory ➔"}
-            </button>
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>

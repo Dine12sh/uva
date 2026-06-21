@@ -12,61 +12,38 @@ interface Particle {
   size: number;
   color: string;
   type: "heart" | "sparkle";
+  baseX?: number; // For parallax
+  baseY?: number; // For parallax
+  z?: number;     // Depth for parallax
 }
 
 export function HeartParticleEngine() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
-  const mouseRef = useRef({ x: -1000, y: -1000 });
+  const mouseRef = useRef({ x: -1000, y: -1000, targetX: -1000, targetY: -1000 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    let animationFrameId: number | null = null;
+    let animationFrameId: number;
+    let isMobile = window.innerWidth < 768;
 
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      isMobile = window.innerWidth < 768;
     };
 
     window.addEventListener("resize", resize);
     resize();
 
-    // Throttled mouse move
-    let lastMouseTime = 0;
     const handleMouseMove = (e: MouseEvent) => {
-      const now = performance.now();
-      if (now - lastMouseTime < 16) return; // Limit to ~60hz
-      lastMouseTime = now;
-
-      mouseRef.current = { x: e.clientX, y: e.clientY };
-      
-      // Cap max particles to prevent memory leak
-      if ((particlesRef.current?.length || 0) > 200) return;
-
-      // Generate particles on mouse move
-      for (let i = 0; i < 2; i++) {
-        particlesRef.current?.push({
-          x: e.clientX,
-          y: e.clientY,
-          vx: (Math.random() - 0.5) * 4,
-          vy: (Math.random() - 0.5) * 4 - 1,
-          life: 0,
-          maxLife: 60 + Math.random() * 40,
-          size: Math.random() * 4 + 2,
-          color: `hsl(${330 + Math.random() * 30}, 100%, 70%)`,
-          type: Math.random() > 0.3 ? "sparkle" : "heart",
-        });
-      }
-
-      // Wake up loop if sleeping
-      if (!animationFrameId) {
-        render();
-      }
+      mouseRef.current.targetX = e.clientX;
+      mouseRef.current.targetY = e.clientY;
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -82,8 +59,10 @@ export function HeartParticleEngine() {
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.fillStyle = color;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 10;
+      if (!isMobile) {
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 10;
+      }
       ctx.translate(x, y);
       ctx.scale(size / 10, size / 10);
       ctx.beginPath();
@@ -96,39 +75,89 @@ export function HeartParticleEngine() {
       ctx.restore();
     };
 
+    let frameCount = 0;
+
     const render = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      frameCount++;
 
+      const maxParticles = isMobile ? 40 : 100;
       const particles = particlesRef.current;
-      if (!particles || particles.length === 0) {
-        animationFrameId = null; // Sleep
-        return;
+
+      // Smooth mouse interpolation
+      mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.1;
+      mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.1;
+
+      // Mouse Follow Glow Effect (Desktop Only)
+      if (!isMobile && mouseRef.current.x > 0) {
+        const glow = ctx.createRadialGradient(
+          mouseRef.current.x, mouseRef.current.y, 0,
+          mouseRef.current.x, mouseRef.current.y, 300
+        );
+        glow.addColorStop(0, "rgba(244, 63, 94, 0.15)");
+        glow.addColorStop(1, "rgba(244, 63, 94, 0)");
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
+
+      // Ambient Particle Spawner
+      if (particles.length < maxParticles && frameCount % (isMobile ? 10 : 3) === 0) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: canvas.height + 20,
+          baseX: Math.random() * canvas.width,
+          baseY: canvas.height + 20,
+          z: Math.random() * 2 + 0.5,
+          vx: (Math.random() - 0.5) * 1,
+          vy: -Math.random() * 2 - 0.5,
+          life: 0,
+          maxLife: 200 + Math.random() * 200,
+          size: Math.random() * 4 + 2,
+          color: `hsl(${330 + Math.random() * 30}, 100%, 70%)`,
+          type: Math.random() > 0.4 ? "sparkle" : "heart",
+        });
+      }
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
 
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.life++;
-        if (p.life >= p.maxLife) {
+        if (p.life >= p.maxLife || p.y < -50) {
           particles.splice(i, 1);
           continue;
         }
 
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.05; // Gravity
+        // Base physics
+        p.baseX! += p.vx;
+        p.baseY! += p.vy;
+        
+        // Slow Parallax movement based on mouse distance from center
+        const mouseOffsetX = (mouseRef.current.x - centerX) * 0.05;
+        const mouseOffsetY = (mouseRef.current.y - centerY) * 0.05;
 
-        const alpha = 1 - p.life / p.maxLife;
+        p.x = p.baseX! - (mouseOffsetX / p.z!);
+        p.y = p.baseY! - (mouseOffsetY / p.z!);
+
+        // Fade in and out
+        let alpha = 1;
+        if (p.life < 30) alpha = p.life / 30;
+        else if (p.life > p.maxLife - 60) alpha = (p.maxLife - p.life) / 60;
+        alpha = Math.max(0, Math.min(1, alpha)) * 0.8;
 
         if (p.type === "heart") {
-          drawHeart(ctx, p.x, p.y, p.size * 2, alpha, p.color);
+          drawHeart(ctx, p.x, p.y, p.size * 1.5, alpha, p.color);
         } else {
           ctx.save();
           ctx.globalAlpha = alpha;
           ctx.fillStyle = p.color;
-          ctx.shadowColor = p.color;
-          ctx.shadowBlur = 15;
+          if (!isMobile) {
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 15;
+          }
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, p.size * 0.6, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         }
@@ -137,7 +166,6 @@ export function HeartParticleEngine() {
       animationFrameId = requestAnimationFrame(render);
     };
 
-    // Initial render call
     render();
 
     return () => {
