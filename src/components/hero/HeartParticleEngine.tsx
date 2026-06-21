@@ -85,19 +85,23 @@ export function HeartParticleEngine() {
       const particles = particlesRef.current;
 
       // Smooth mouse interpolation
-      mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.1;
-      mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.1;
+      mouseRef.current.x += ((mouseRef.current.targetX || -1000) - (mouseRef.current.x || -1000)) * 0.1;
+      mouseRef.current.y += ((mouseRef.current.targetY || -1000) - (mouseRef.current.y || -1000)) * 0.1;
 
       // Mouse Follow Glow Effect (Desktop Only)
-      if (!isMobile && mouseRef.current.x > 0) {
-        const glow = ctx.createRadialGradient(
-          mouseRef.current.x, mouseRef.current.y, 0,
-          mouseRef.current.x, mouseRef.current.y, 300
-        );
-        glow.addColorStop(0, "rgba(244, 63, 94, 0.15)");
-        glow.addColorStop(1, "rgba(244, 63, 94, 0)");
-        ctx.fillStyle = glow;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (!isMobile && !isNaN(mouseRef.current.x) && mouseRef.current.x > 0) {
+        try {
+          const glow = ctx.createRadialGradient(
+            mouseRef.current.x, mouseRef.current.y, 0,
+            mouseRef.current.x, mouseRef.current.y, 300
+          );
+          glow.addColorStop(0, "rgba(244, 63, 94, 0.15)");
+          glow.addColorStop(1, "rgba(244, 63, 94, 0)");
+          ctx.fillStyle = glow;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        } catch (e) {
+          // Prevent radial gradient crashes if coordinates go out of bounds
+        }
       }
 
       // Ambient Particle Spawner
@@ -134,11 +138,18 @@ export function HeartParticleEngine() {
         p.baseY! += p.vy;
         
         // Slow Parallax movement based on mouse distance from center
-        const mouseOffsetX = (mouseRef.current.x - centerX) * 0.05;
-        const mouseOffsetY = (mouseRef.current.y - centerY) * 0.05;
+        const safeMouseX = isNaN(mouseRef.current.x) ? centerX : mouseRef.current.x;
+        const safeMouseY = isNaN(mouseRef.current.y) ? centerY : mouseRef.current.y;
+        
+        const mouseOffsetX = (safeMouseX - centerX) * 0.05;
+        const mouseOffsetY = (safeMouseY - centerY) * 0.05;
 
-        p.x = p.baseX! - (mouseOffsetX / p.z!);
-        p.y = p.baseY! - (mouseOffsetY / p.z!);
+        p.x = p.baseX! - (mouseOffsetX / (p.z || 1));
+        p.y = p.baseY! - (mouseOffsetY / (p.z || 1));
+        
+        // Fallback for extreme cases
+        if (!isFinite(p.x)) p.x = 0;
+        if (!isFinite(p.y)) p.y = 0;
 
         // Fade in and out
         let alpha = 1;
@@ -147,7 +158,7 @@ export function HeartParticleEngine() {
         alpha = Math.max(0, Math.min(1, alpha)) * 0.8;
 
         if (p.type === "heart") {
-          drawHeart(ctx, p.x, p.y, p.size * 1.5, alpha, p.color);
+          drawHeart(ctx, p.x, p.y, (p.size || 2) * 1.5, alpha, p.color);
         } else {
           ctx.save();
           ctx.globalAlpha = alpha;
@@ -157,7 +168,7 @@ export function HeartParticleEngine() {
             ctx.shadowBlur = 15;
           }
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size * 0.6, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, (p.size || 2) * 0.6, 0, Math.PI * 2);
           ctx.fill();
           ctx.restore();
         }

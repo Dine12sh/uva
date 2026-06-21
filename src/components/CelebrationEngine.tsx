@@ -213,10 +213,10 @@ export default function CelebrationEngine() {
       }
 
       particlesRef.current.push({
-        x,
-        y,
-        vx,
-        vy,
+        x: isFinite(x) ? x : 0,
+        y: isFinite(y) ? y : 0,
+        vx: isFinite(vx) ? vx : 0,
+        vy: isFinite(vy) ? vy : 0,
         color,
         radius: 1.5 + Math.random() * (isMobile ? 1.5 : 2.5),
         alpha: 1,
