@@ -27,7 +27,7 @@ export function CinematicHero() {
     <AnimatePresence>
       {!heroHidden && (
         <motion.section
-          initial={{ height: "100vh", opacity: 1 }}
+          initial={{ height: "100dvh", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
           className="relative w-full bg-[#050505] overflow-hidden"

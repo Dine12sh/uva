@@ -89,7 +89,7 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-            className="relative min-h-screen text-white selection:bg-pink-500 selection:text-white overflow-x-hidden bg-transparent"
+            className="relative min-h-[100dvh] text-white selection:bg-pink-500 selection:text-white overflow-x-hidden bg-transparent"
           >
             {/* Background Layers */}
             <AtmosphericBackground />

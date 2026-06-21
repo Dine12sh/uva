@@ -252,6 +252,7 @@ export default function InteractiveCake() {
 
     const handleTouchMove = (e: TouchEvent) => {
       if (!isDragging) return;
+      e.preventDefault(); // Prevents the browser from scrolling while rotating the cake
       const touch = e.touches[0];
       const deltaMove = {
         x: touch.clientX - previousMousePosition.x,
@@ -275,8 +276,10 @@ export default function InteractiveCake() {
     container.addEventListener("mousedown", handleMouseDown);
     container.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
-    container.addEventListener("touchstart", handleTouchStart);
-    container.addEventListener("touchmove", handleTouchMove);
+    
+    // Use passive: false so we are allowed to call e.preventDefault()
+    container.addEventListener("touchstart", handleTouchStart, { passive: false });
+    container.addEventListener("touchmove", handleTouchMove, { passive: false });
     window.addEventListener("touchend", handleTouchEnd);
 
     // 6. Animation Loop

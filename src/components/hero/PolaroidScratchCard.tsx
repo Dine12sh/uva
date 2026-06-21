@@ -240,7 +240,7 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ type: "spring", stiffness: 120, damping: 12 }}
-            className="absolute -bottom-24 z-40"
+            className="absolute -bottom-16 md:-bottom-24 z-40 scale-90 md:scale-100"
           >
             <motion.button
               whileTap={{ scale: 0.95 }}
