@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useCelebrationStore } from "../store/useCelebrationStore";
+import Image from "next/image";
 
 const collagePhotos = [
   "/media/25860_ae_lite_edit (1).jpg",
@@ -17,6 +18,27 @@ const collagePhotos = [
 
 export default function FinalSurprise() {
   const { triggerFireworks, triggerBalloons, triggerConfetti } = useCelebrationStore();
+  const [hasCelebrated, setHasCelebrated] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Auto-trigger celebration when section scrolls into view
+  useEffect(() => {
+    if (!sectionRef.current) return;
+    
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasCelebrated) {
+          setHasCelebrated(true);
+          triggerConfetti();
+          setTimeout(() => triggerFireworks(), 400);
+        }
+      },
+      { threshold: 0.4 }
+    );
+
+    observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, [hasCelebrated, triggerConfetti, triggerFireworks]);
 
   const handleEndingCelebrate = () => {
     triggerConfetti();
@@ -27,7 +49,8 @@ export default function FinalSurprise() {
   return (
     <section
       id="final-surprise"
-      className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden px-6 py-24 bg-black"
+      ref={sectionRef}
+      className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden px-6 py-24 final-bg"
     >
       {/* Background Animated Collage (Ken Burns slow zoom effect) */}
       <motion.div
@@ -36,15 +59,22 @@ export default function FinalSurprise() {
         className="absolute inset-0 grid grid-cols-2 md:grid-cols-4 gap-2 opacity-15 pointer-events-none"
       >
         {collagePhotos.map((url, index) => (
-          <div key={index} className="w-full h-full overflow-hidden bg-zinc-950">
-            <img src={url} alt="Ending Background Collage" className="w-full h-full object-cover" />
+          <div key={index} className="relative w-full h-full overflow-hidden bg-zinc-950">
+            <Image
+              src={url}
+              alt="Ending Background Collage"
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw"
+              className="object-cover"
+              unoptimized
+            />
           </div>
         ))}
       </motion.div>
 
       {/* Dark overlay gradients */}
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent pointer-events-none" />
-      <div className="absolute inset-0 bg-radial-gradient(circle, transparent 20%, black 90%) pointer-events-none" />
+      <div className="absolute inset-0 final-bg pointer-events-none" />
 
       {/* Central Glassmorphism Card */}
       <motion.div
@@ -82,13 +112,13 @@ export default function FinalSurprise() {
           className="mt-8 space-y-6 text-zinc-300 text-sm md:text-base leading-relaxed font-medium"
         >
           <p>
-            Thank you for all the laughs, support, encouragement, and unforgettable memories we've created together.
+            Thank you for all the laughs, support, encouragement, and unforgettable memories we&apos;ve created together.
           </p>
           <p>
             May your life always be filled with happiness, success, good health, love, and endless reasons to smile.
           </p>
           <p className="font-serif italic text-pink-300 text-base md:text-lg">
-            "You deserve every beautiful thing this world has to offer."
+            &ldquo;You deserve every beautiful thing this world has to offer.&rdquo;
           </p>
         </motion.div>
 
@@ -118,12 +148,6 @@ export default function FinalSurprise() {
             ❤
           </motion.button>
         </motion.div>
-
-        <style jsx global>{`
-          #final-surprise {
-            background: radial-gradient(circle at center, rgba(30,15,40,0.4) 0%, black 100%);
-          }
-        `}</style>
       </motion.div>
     </section>
   );

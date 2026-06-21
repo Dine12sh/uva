@@ -75,7 +75,7 @@ export default function CelebrationEngine() {
   const rocketsRef = useRef<FireworkRocket[]>([]);
   const balloonsRef = useRef<Balloon[]>([]);
   const heartsRef = useRef<Heart[]>([]);
-  const ribbonsRef = useRef<Ribbon[]>([]);
+  const isAnimatingRef = useRef(false);
 
   // Setup canvas resizing
   useEffect(() => {
@@ -94,22 +94,32 @@ export default function CelebrationEngine() {
     return () => window.removeEventListener("resize", resizeCanvas);
   }, []);
 
+  const checkAndStartAnimation = () => {
+    if (!isAnimatingRef.current) {
+      isAnimatingRef.current = true;
+      startAnimationLoop();
+    }
+  };
+
   // Listen to global triggers
   useEffect(() => {
     if (fireworkTriggerCount > 0) {
       launchFireworks(Math.min(3 + Math.floor(Math.random() * 3), 6));
+      checkAndStartAnimation();
     }
   }, [fireworkTriggerCount]);
 
   useEffect(() => {
     if (balloonTriggerCount > 0) {
       spawnBalloons(35);
+      checkAndStartAnimation();
     }
   }, [balloonTriggerCount]);
 
   useEffect(() => {
     if (heartTriggerCount > 0) {
       spawnHearts(40);
+      checkAndStartAnimation();
     }
   }, [heartTriggerCount]);
 
@@ -229,16 +239,34 @@ export default function CelebrationEngine() {
     return palette[Math.floor(Math.random() * palette.length)];
   };
 
-  // Main animation loops
-  useEffect(() => {
+  const startAnimationLoop = () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      isAnimatingRef.current = false;
+      return;
+    }
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      isAnimatingRef.current = false;
+      return;
+    }
 
     let animId: number;
 
     const update = () => {
+      // Check for idle state
+      const totalParticles =
+        particlesRef.current.length +
+        rocketsRef.current.length +
+        balloonsRef.current.length +
+        heartsRef.current.length;
+
+      if (totalParticles === 0) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Ensure canvas is clean when idle
+        isAnimatingRef.current = false;
+        return; // Stop the animation loop
+      }
+
       // Clear with slight alpha for tail trails
       ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
       ctx.globalCompositeOperation = "destination-out";
@@ -404,7 +432,7 @@ export default function CelebrationEngine() {
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, []);
+  };
 
   return (
     <canvas

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Montserrat, Sacramento } from "next/font/google";
 import "./globals.css";
 
@@ -18,10 +18,24 @@ const sacramento = Sacramento({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: "#050505",
+};
+
 export const metadata: Metadata = {
-  title: "Happy Birthday! 🎂✨",
-  description: "A beautiful cinematic digital birthday surprise showing our friendship journey.",
+  title: "Happy Birthday! 🎂✨ | A Cinematic Birthday Surprise",
+  description:
+    "A stunning cinematic birthday celebration — an immersive experience with interactive cake, balloon games, memory galleries, and heartfelt wishes crafted with love.",
   authors: [{ name: "Best Friend" }],
+  openGraph: {
+    title: "Happy Birthday! 🎂✨",
+    description:
+      "A beautiful cinematic digital birthday surprise showing our friendship journey.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

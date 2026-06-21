@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { gsap } from "gsap";
+import gsap from "gsap";
+// @ts-ignore
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+// @ts-ignore
+import Image from "next/image";
 
 // Register GSAP ScrollTrigger client-side
 if (typeof window !== "undefined") {
@@ -11,6 +14,8 @@ if (typeof window !== "undefined") {
 
 interface TimelineItem {
   section: string;
+  title: string;
+  description: string;
   emoji: string;
   photos: string[];
 }
@@ -18,26 +23,36 @@ interface TimelineItem {
 const timelineData: TimelineItem[] = [
   {
     section: "first_memories",
+    title: "First Memories",
+    description: "The beautiful start of a friendship that would mean everything.",
     emoji: "🌸",
     photos: ["/media/IMG-20251207-WA0025.jpg", "/media/IMG-20251207-WA0035.jpg"],
   },
   {
     section: "beautiful_moments",
+    title: "Beautiful Moments",
+    description: "Capturing glowing smiles and random snapshots of joy.",
     emoji: "📸",
     photos: ["/media/25860_ae_lite_edit (1).jpg", "/media/IMG_20260613_223016.jpg"],
   },
   {
     section: "fun_adventures",
+    title: "Fun Adventures",
+    description: "Spontaneous plans and the absolute best of times.",
     emoji: "🎈",
     photos: ["/media/IMG_20260614_144734~2.jpg", "/media/IMG_20260614_180206.jpg"],
   },
   {
     section: "special_days",
+    title: "Special Days",
+    description: "Dressed up, celebrating milestones, and feeling grateful.",
     emoji: "🌟",
     photos: ["/media/IMG_20260614_180315.jpg", "/media/IMG_20260614_180739.jpg"],
   },
   {
     section: "unforgettable_memories",
+    title: "Unforgettable Memories",
+    description: "Always there for each other, chapters that will last a lifetime.",
     emoji: "💖",
     photos: ["/media/IMG_20260615_220045.jpg", "/media/IMG-20260108-WA0012.jpg"],
   },
@@ -68,7 +83,7 @@ export default function Timeline() {
 
     // Animate cards on scroll reveal
     const cards = containerRef.current.querySelectorAll(".timeline-card");
-    const anims: gsap.core.Tween[] = [];
+    const anims: any[] = [];
     cards.forEach((card, idx) => {
       const isLeft = idx % 2 === 0;
       const tween = gsap.fromTo(
@@ -97,7 +112,7 @@ export default function Timeline() {
     return () => {
       lineTrigger.kill();
       anims.forEach((t) => t.kill());
-      ScrollTrigger.getAll().forEach((t) => t.kill());
+      ScrollTrigger.getAll().forEach((t: any) => t.kill());
     };
   }, []);
 
@@ -146,6 +161,12 @@ export default function Timeline() {
                   {/* Card wrapper */}
                   <div className="w-full md:w-1/2 pl-12 md:pl-0 md:px-12">
                     <div className="timeline-card bg-white/5 border border-white/10 p-6 md:p-8 rounded-3xl backdrop-blur-xl hover:bg-white/10 transition-all duration-700 shadow-[0_15px_40px_rgba(0,0,0,0.5)] group hover:shadow-[0_20px_60px_rgba(183,110,121,0.25)] hover:-translate-y-2">
+                      
+                      <div className="mb-6">
+                        <h3 className="text-xl md:text-2xl font-bold text-pink-200 mb-2">{item.title}</h3>
+                        <p className="text-zinc-400 text-sm">{item.description}</p>
+                      </div>
+
                       {/* Polaroid images deck inside card */}
                       <div className="grid grid-cols-2 gap-4">
                         {item.photos.map((photo, pIdx) => (
@@ -153,10 +174,13 @@ export default function Timeline() {
                             key={pIdx}
                             className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-zinc-800 shadow-[0_15px_30px_rgb(0,0,0,0.4)] group-hover:scale-[1.04] transition-all duration-700 cursor-zoom-in group/photo"
                           >
-                            <img
+                            <Image
                               src={photo}
-                              alt="Memory photo"
-                              className="w-full h-full object-cover transform scale-105 group-hover/photo:scale-[1.2] transition-transform duration-[1500ms] ease-out origin-center"
+                              alt={`Memory photo ${pIdx + 1}`}
+                              fill
+                              sizes="(max-width: 768px) 45vw, 20vw"
+                              className="object-cover transform scale-105 group-hover/photo:scale-[1.2] transition-transform duration-[1500ms] ease-out origin-center"
+                              unoptimized
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/photo:opacity-100 transition-opacity duration-700 mix-blend-overlay" />
                           </div>

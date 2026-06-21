@@ -38,9 +38,13 @@ export function HeartParticleEngine() {
 
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current = { x: e.clientX, y: e.clientY };
+      
+      // Cap max particles to prevent memory leak
+      if ((particlesRef.current?.length || 0) > 200) return;
+
       // Generate particles on mouse move
       for (let i = 0; i < 2; i++) {
-        particlesRef.current.push({
+        particlesRef.current?.push({
           x: e.clientX,
           y: e.clientY,
           vx: (Math.random() - 0.5) * 4,
@@ -82,11 +86,11 @@ export function HeartParticleEngine() {
     };
 
     const render = () => {
-      // Fade out trail
-      ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const particles = particlesRef.current;
+      if (!particles) return;
+
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.life++;

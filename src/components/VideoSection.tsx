@@ -98,6 +98,7 @@ export default function VideoSection({ memories }: VideoSectionProps) {
                 muted
                 playsInline
                 loop
+                preload="metadata"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
 

@@ -45,18 +45,30 @@ export default function IntroScreen({ onComplete }: IntroScreenProps) {
   };
 
   // Split text into lines/words for staggered animations
-  const line1 = "A Special Birthday Surprise";
-  const line2 = "For Someone Amazing 🎂✨";
+  const line1 = "A Cutiepie Was Born Today";
+  const line2 = "21 Years Ago! 🎂✨";
+  const subtitle = "Yes, it's YOU! A little surprise awaits...";
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-radial from-slate-950 via-purple-950 to-black text-white">
       {/* Background Star Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute w-[2px] h-[2px] bg-white rounded-full top-[10%] left-[20%] animate-ping duration-1000 opacity-60" />
-        <div className="absolute w-[3px] h-[3px] bg-pink-300 rounded-full top-[30%] left-[80%] animate-pulse duration-2000 opacity-80" />
-        <div className="absolute w-[2px] h-[2px] bg-purple-300 rounded-full top-[70%] left-[15%] animate-ping duration-[3000ms] opacity-50" />
-        <div className="absolute w-[3px] h-[3px] bg-yellow-200 rounded-full top-[60%] left-[85%] animate-pulse duration-[1500ms] opacity-70" />
-        <div className="absolute w-[2px] h-[2px] bg-white rounded-full top-[40%] left-[50%] animate-pulse duration-[2500ms] opacity-40" />
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={i}
+            className="css-particle"
+            style={{
+              left: `${(i * 13 + 8) % 100}%`,
+              top: `${(i * 17 + 5) % 100}%`,
+              animationDuration: `${8 + (i % 4) * 3}s`,
+              animationDelay: `${(i % 5) * 1.2}s`,
+              opacity: 0.3 + (i % 3) * 0.15,
+              width: `${2 + (i % 3)}px`,
+              height: `${2 + (i % 3)}px`,
+              background: i % 2 === 0 ? "rgba(255, 182, 193, 0.6)" : "rgba(255, 255, 255, 0.5)",
+            }}
+          />
+        ))}
         
         {/* Soft Aurora Glow Lights */}
         <div className="absolute -top-40 left-1/4 h-[400px] w-[400px] rounded-full bg-purple-900/20 blur-[120px] animate-pulse duration-[8000ms]" />
@@ -99,6 +111,16 @@ export default function IntroScreen({ onComplete }: IntroScreenProps) {
                 </motion.span>
               ))}
             </h1>
+
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 2.8 }}
+              className="mt-8 text-zinc-400 text-lg md:text-xl font-light tracking-wide"
+            >
+              {subtitle}
+            </motion.p>
           </motion.div>
         )}
 
@@ -156,14 +178,6 @@ export default function IntroScreen({ onComplete }: IntroScreenProps) {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Global CSS for custom animations inside IntroScreen */}
-      <style jsx global>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-      `}</style>
     </div>
   );
 }

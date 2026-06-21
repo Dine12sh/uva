@@ -43,39 +43,20 @@ export default function AtmosphericBackground() {
         className="absolute -bottom-1/4 -right-1/4 w-[90vw] h-[90vw] rounded-full bg-rose-500/10 blur-[150px] mix-blend-screen"
       />
 
-      {/* Aurora Effects - Center / Amber */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{
-          opacity: [0.1, 0.25, 0.1],
-          scale: [0.8, 1.5, 0.8],
-          rotate: [0, 90, 0]
-        }}
-        transition={{ duration: 40, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-1/4 left-1/4 w-[60vw] h-[60vw] rounded-full bg-amber-400/5 blur-[140px] mix-blend-screen"
-      />
-
-      {/* Floating Ambient Particles */}
-      {[...Array(40)].map((_, i) => (
-        <motion.div
+      {/* CSS-only Floating Particles — replaces 40 Framer Motion divs with window.innerHeight */}
+      {Array.from({ length: 25 }, (_, i) => (
+        <div
           key={i}
-          initial={{
-            opacity: 0,
-            y: Math.random() * window.innerHeight,
-            x: Math.random() * window.innerWidth
+          className="css-particle"
+          style={{
+            left: `${(i * 41 + 7) % 100}%`,
+            top: `${(i * 59 + 13) % 100}%`,
+            animationDuration: `${15 + (i % 10) * 3}s`,
+            animationDelay: `${(i * 0.8) % 8}s`,
+            opacity: 0.2 + (i % 5) * 0.1,
+            width: `${1 + (i % 3)}px`,
+            height: `${1 + (i % 3)}px`,
           }}
-          animate={{
-            opacity: [0, Math.random() * 0.5 + 0.3, 0],
-            y: [null, Math.random() * -200 - 100],
-            x: [null, (Math.random() - 0.5) * 100]
-          }}
-          transition={{
-            duration: Math.random() * 10 + 10,
-            repeat: Infinity,
-            ease: "linear",
-            delay: Math.random() * 10
-          }}
-          className="absolute w-[2px] h-[2px] rounded-full bg-white/60 blur-[1px]"
         />
       ))}
       

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface WishesLetterProps {
@@ -22,24 +22,30 @@ You truly deserve the very best.
 export default function WishesLetter({ customMessage }: WishesLetterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [typedText, setTypedText] = useState("");
+  const [typingDone, setTypingDone] = useState(false);
   
   const textToType = customMessage || defaultMessage;
+  const indexRef = useRef(0);
 
-  // Typewriter effect
+  // Typewriter effect — fixed with ref-based counter instead of closure
   useEffect(() => {
     if (!isOpen) {
       setTypedText("");
+      setTypingDone(false);
+      indexRef.current = 0;
       return;
     }
 
-    let index = 0;
     const interval = setInterval(() => {
-      setTypedText((prev) => prev + textToType.charAt(index));
-      index++;
-      if (index >= textToType.length) {
+      if (indexRef.current >= textToType.length) {
         clearInterval(interval);
+        setTypingDone(true);
+        return;
       }
-    }, 35); // speed of typing
+      const char = textToType.charAt(indexRef.current);
+      setTypedText((prev) => prev + char);
+      indexRef.current++;
+    }, 35);
 
     return () => clearInterval(interval);
   }, [isOpen, textToType]);
@@ -130,7 +136,7 @@ export default function WishesLetter({ customMessage }: WishesLetterProps) {
             {/* Letter Text (Handwritten script) */}
             <div className="relative min-h-[300px] whitespace-pre-wrap font-serif text-xl md:text-2xl leading-relaxed text-[#5C4A37] tracking-wide font-medium">
               {typedText}
-              <span className="inline-block w-[3px] h-[22px] ml-1 bg-[#5C4A37] animate-pulse" />
+              {!typingDone && <span className="typewriter-cursor" />}
             </div>
 
             {/* Close Button / Wax Seal Re-seal */}

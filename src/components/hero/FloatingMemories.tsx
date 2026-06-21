@@ -1,19 +1,21 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import gsap from "gsap";
+import Image from "next/image";
 
 interface FloatingMemoriesProps {
   onExplode: () => void;
 }
 
+// Replaced placeholder text with actual photos from gallery
 const MEMORIES = [
-  { id: 1, x: -30, y: -20, z: -100, rotate: -15, scale: 0.8 },
-  { id: 2, x: 40, y: -30, z: -150, rotate: 10, scale: 0.6 },
-  { id: 3, x: -40, y: 30, z: -50, rotate: -5, scale: 0.9 },
-  { id: 4, x: 30, y: 20, z: -200, rotate: 20, scale: 0.7 },
-  { id: 5, x: 0, y: -40, z: -80, rotate: 5, scale: 0.85 },
+  { id: 1, x: -30, y: -20, z: -100, rotate: -15, scale: 0.8, url: "/media/IMG-20251207-WA0025.jpg" },
+  { id: 2, x: 40, y: -30, z: -150, rotate: 10, scale: 0.6, url: "/media/IMG_20260613_223016.jpg" },
+  { id: 3, x: -40, y: 30, z: -50, rotate: -5, scale: 0.9, url: "/media/IMG_20260614_144734~2.jpg" },
+  { id: 4, x: 30, y: 20, z: -200, rotate: 20, scale: 0.7, url: "/media/IMG_20260614_180206.jpg" },
+  { id: 5, x: 0, y: -40, z: -80, rotate: 5, scale: 0.85, url: "/media/IMG_20260614_180315.jpg" },
 ];
 
 export function FloatingMemories({ onExplode }: FloatingMemoriesProps) {
@@ -50,7 +52,7 @@ export function FloatingMemories({ onExplode }: FloatingMemoriesProps) {
     });
 
     // Fly cards toward the camera (scale up heavily, fade out)
-    cardsRef.current.forEach((card: HTMLDivElement | null, i: number) => {
+    cardsRef.current?.forEach((card: HTMLDivElement | null, i: number) => {
       if (!card) return;
       tl.to(
         card,
@@ -85,7 +87,9 @@ export function FloatingMemories({ onExplode }: FloatingMemoriesProps) {
           <motion.div
             key={mem.id}
             ref={(el: HTMLDivElement | null) => {
-              cardsRef.current[index] = el;
+              if (cardsRef.current) {
+                cardsRef.current[index] = el;
+              }
             }}
             initial={{ opacity: 0, y: 100 }}
             animate={{
@@ -94,7 +98,7 @@ export function FloatingMemories({ onExplode }: FloatingMemoriesProps) {
               transition: { delay: 0.5 + index * 0.1, duration: 1 },
             }}
             whileHover={{ scale: 1.05, zIndex: 50 }}
-            className="absolute w-48 h-64 md:w-64 md:h-80 rounded-2xl border border-white/20 bg-black/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(255,0,100,0.2)] flex flex-col items-center justify-center overflow-hidden cursor-pointer group"
+            className="absolute w-48 h-64 md:w-64 md:h-80 rounded-2xl border border-white/20 bg-zinc-900 shadow-[0_8px_32px_rgba(255,0,100,0.2)] flex flex-col items-center justify-center overflow-hidden cursor-pointer group"
             style={{
               x: `${mem.x}vw`,
               y: `${mem.y}vh`,
@@ -103,11 +107,17 @@ export function FloatingMemories({ onExplode }: FloatingMemoriesProps) {
               scale: mem.scale,
             }}
           >
+            <Image
+              src={mem.url}
+              alt={`Memory ${mem.id}`}
+              fill
+              sizes="(max-width: 768px) 12rem, 16rem"
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
+              unoptimized
+            />
             {/* Glassmorphism Shine */}
             <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="text-white/50 text-sm font-medium tracking-widest uppercase">
-              Memory {mem.id}
-            </div>
+            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-500" />
           </motion.div>
         ))}
 

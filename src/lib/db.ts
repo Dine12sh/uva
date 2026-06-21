@@ -125,15 +125,6 @@ const DEFAULT_MEMORIES: Memory[] = [
     createdAt: new Date().toISOString(),
   },
   {
-    id: "mem-13",
-    type: "video",
-    url: "/media/video_20260614_060100.mp4",
-    caption: "A bright morning, a beautiful day.",
-    section: "special_days",
-    order: 3,
-    createdAt: new Date().toISOString(),
-  },
-  {
     id: "mem-14",
     type: "video",
     url: "/media/Kai_Project_V1~2.mp4",
