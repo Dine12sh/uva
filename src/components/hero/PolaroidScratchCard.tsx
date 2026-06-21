@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import gsap from "gsap";
 import Image from "next/image";
 
 interface PolaroidScratchCardProps {
@@ -26,6 +27,8 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
   const [showTypewriter, setShowTypewriter] = useState(false);
   const [typedText, setTypedText] = useState("");
   const [showNext, setShowNext] = useState(false);
+  const [showHeartOverlay, setShowHeartOverlay] = useState(false);
+  const heartOverlayRef = useRef<HTMLDivElement>(null);
 
   // Typewriter effect logic
   useEffect(() => {
@@ -46,6 +49,22 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
 
     return () => clearInterval(interval);
   }, [showTypewriter, caption]);
+
+  // Heart Flash Animation
+  useEffect(() => {
+    if (showHeartOverlay && heartOverlayRef.current) {
+      gsap.set(heartOverlayRef.current, { scale: 1, opacity: 1 });
+      gsap.to(heartOverlayRef.current, {
+        scale: 12,
+        opacity: 0,
+        duration: 0.5,
+        ease: "power4.out",
+        onComplete: () => {
+          setShowHeartOverlay(false);
+        }
+      });
+    }
+  }, [showHeartOverlay]);
 
   // Initialize Canvas
   useEffect(() => {
@@ -111,7 +130,9 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
     const percentage = (transparentPixels / totalPixels) * 100;
 
     if (percentage > 65) {
-      setIsRevealed(true);
+      setShowHeartOverlay(true);
+      setTimeout(() => setIsRevealed(true), 100);
+      
       // Trigger typewriter slightly after the Polaroid pop animation
       setTimeout(() => setShowTypewriter(true), 1200);
     }
@@ -224,6 +245,17 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
           )}
         </AnimatePresence>
       </div>
+
+      {/* Heart Flash Transition Overlay */}
+      {showHeartOverlay && (
+        <div
+          ref={heartOverlayRef}
+          className="fixed inset-0 m-auto w-40 h-40 rounded-full bg-white shadow-[0_0_100px_rgba(255,192,203,1)] z-[100] pointer-events-none flex items-center justify-center"
+        >
+          <div className="absolute inset-0 rounded-full bg-pink-200 blur-2xl opacity-80" />
+          <span className="text-5xl drop-shadow-lg relative z-10">💖</span>
+        </div>
+      )}
 
       {/* Action Button (Next Memory or Finale) */}
       <AnimatePresence>
