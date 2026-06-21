@@ -61,14 +61,14 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
         },
       });
 
-      // 1. Camera Shake on the main wrapper
+      // 1. Camera Shake on the main wrapper (200-300ms)
       if (containerRef.current) {
         gsap.to(containerRef.current, {
-          x: () => gsap.utils.random(-25, 25),
-          y: () => gsap.utils.random(-25, 25),
-          rotation: () => gsap.utils.random(-3, 3),
-          duration: 0.1,
-          repeat: 12, // 1.2s of shake
+          x: () => gsap.utils.random(-15, 15),
+          y: () => gsap.utils.random(-15, 15),
+          rotation: () => gsap.utils.random(-2, 2),
+          duration: 0.05,
+          repeat: 5, // 250ms of shake
           yoyo: true,
           ease: "none",
           onComplete: () => {
@@ -77,30 +77,37 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
         });
       }
 
-      // 2. Lens Flare Flash
+      // 2. Short White Flash (500-700ms)
       if (lensFlareRef.current) {
         gsap.fromTo(lensFlareRef.current,
-          { opacity: 1, scale: 1 },
-          { opacity: 0, scale: 10, duration: 0.7, ease: "power4.out" }
+          { opacity: 1 },
+          { opacity: 0, duration: 0.6, ease: "power4.out" }
         );
       }
 
-      // 3. Expanding GSAP Heart (Scale to 30)
+      // 3. Expanding GSAP Heart (Dynamic Scale based on Viewport)
       if (heartRef.current) {
+        const targetScale = window.innerWidth > 768 ? 25 : 15;
         tl.to(heartRef.current, {
-          scale: 30,
+          scale: targetScale,
           opacity: 0,
           duration: 1.5,
           ease: "power4.inOut",
         }, 0);
       }
 
-      // 4. Image Overlay (IMG-20251207-WA0025.jpg) appearing through the pink light
+      // 4. Image Overlay fading in and then fading out
       if (overlayImageRef.current) {
         tl.fromTo(overlayImageRef.current, 
           { opacity: 0, scale: 0.8 }, 
-          { opacity: 1, scale: 1, duration: 1.5, ease: "power3.out" }, 
-        0.5);
+          { opacity: 1, scale: 1, duration: 1.0, ease: "power3.out" }, 
+        0.2)
+        .to(overlayImageRef.current, {
+          opacity: 0,
+          scale: 1.1,
+          duration: 0.5,
+          ease: "power2.in"
+        }, "+=0.3");
       }
 
       // 5. Flying Particles (Photos, Petals, Hearts, Sparks)
@@ -206,10 +213,10 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       {/* EXPLOSION DOM ELEMENTS */}
       {!isExplosionFinished && (
         <>
-          {/* 1. Lens Flare */}
+          {/* 1. Short White Flash */}
           <div 
             ref={lensFlareRef}
-            className="absolute z-[90] pointer-events-none opacity-0 w-[50vw] h-[50vw] rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,1)_0%,rgba(255,192,203,0.8)_20%,transparent_70%)] mix-blend-screen"
+            className="fixed inset-0 z-[90] pointer-events-none opacity-0 bg-white"
           />
 
           {/* 2. Expanding Pink Heart */}

@@ -5,9 +5,7 @@ import Lenis from "lenis";
 // @ts-ignore
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
-import { Volume2, VolumeX, Play, Pause } from "lucide-react";
-import { useMusicStore } from "../store/useMusicStore";
-import { useCelebrationStore } from "../store/useCelebrationStore";
+import { Play, Pause } from "lucide-react";
 
 // Static imports for initial view components
 import CountdownIntro from "./CountdownIntro";
@@ -34,9 +32,6 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
   const [showCountdown, setShowCountdown] = useState(true);
   const [showIntro, setShowIntro] = useState(false);
   const [showMain, setShowMain] = useState(false);
-  
-  const { isPlaying, isMuted, volume, setPlaying, setMuted, setVolume } = useMusicStore();
-  const { isExploding } = useCelebrationStore();
 
   // Handle flow transitions
   const handleCountdownComplete = () => {
@@ -135,41 +130,6 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
 
               {/* 11. Gift Reveal */}
               <GiftReveal />
-            </div>
-
-            {/* Floating Premium Music Bar */}
-            <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-white/5 border border-white/10 backdrop-blur-md px-4 py-2.5 rounded-full shadow-2xl transition-all duration-500 hover:border-pink-300/30 ${isExploding ? "opacity-0 pointer-events-none translate-y-10" : "opacity-100"}`}>
-              <button
-                onClick={() => setPlaying(!isPlaying)}
-                className="p-3 min-w-[44px] min-h-[44px] flex justify-center items-center rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-500"
-                title={isPlaying ? "Pause Music" : "Play Music"}
-                aria-label={isPlaying ? "Pause background music" : "Play background music"}
-              >
-                {isPlaying ? <Pause size={18} /> : <Play size={18} />}
-              </button>
-
-              <button
-                onClick={() => setMuted(!isMuted)}
-                className="p-3 min-w-[44px] min-h-[44px] flex justify-center items-center rounded-full hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-500"
-                title={isMuted ? "Unmute" : "Mute"}
-                aria-label={isMuted ? "Unmute background music" : "Mute background music"}
-              >
-                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-              </button>
-
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                value={isMuted ? 0 : volume}
-                onChange={(e: any) => {
-                  setVolume(Number(e.target.value));
-                  if (isMuted) setMuted(false);
-                }}
-                className="w-16 md:w-24 accent-pink-500 h-[3px] bg-zinc-800 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-500"
-                aria-label="Volume slider"
-              />
             </div>
           </motion.div>
         )}
