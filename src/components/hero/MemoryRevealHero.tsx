@@ -40,9 +40,14 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
   const finalPhotoRef = useRef<HTMLDivElement>(null);
   const ambientBloomRef = useRef<HTMLDivElement>(null);
   
-  // Climax auto scroll refs
+  // Climax auto scroll & hint refs
   const downArrowRef = useRef<HTMLDivElement>(null);
+  const scrollHintRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const hasAutoScrolledRef = useRef(false);
+  
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hintTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isAutoScrollingRef = useRef(false);
   const userInteractedRef = useRef(false);
   const floatTweenRef = useRef<gsap.core.Tween | null>(null);
@@ -409,26 +414,108 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       // CINEMATIC CLIMAX AUTO-SCROLL CONTROLLER
       // ==========================================
       tl.add(() => {
-        // Prevent multiple scroll triggers
-        if (sessionStorage.getItem("timelineAutoScrolled") === "true") {
-          onExplode();
-          setTimeout(() => {
-            setIsExplosionFinished(true);
-            onHeroComplete?.();
-          }, 800);
-          return;
-        }
+        const startAutoScrollCountdown = () => {
+          if (hasAutoScrolledRef.current || userInteractedRef.current) return;
+
+          // Timeout 4s: Fade in transition hint card softly
+          hintTimeoutRef.current = setTimeout(() => {
+            if (userInteractedRef.current) return;
+            
+            gsap.killTweensOf(scrollHintRef.current);
+            gsap.to(scrollHintRef.current, {
+              opacity: 1,
+              y: 0,
+              duration: 0.65,
+              ease: "power2.out"
+            });
+            
+            // Fade out the down arrow indicator
+            if (arrowPulse) arrowPulse.kill();
+            gsap.killTweensOf(downArrowRef.current);
+            gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.5, ease: "power2.in" });
+          }, 4000);
+
+          // Timeout 5s: Smooth programmatic cinematic scroll
+          scrollTimeoutRef.current = setTimeout(() => {
+            if (userInteractedRef.current) return;
+            isAutoScrollingRef.current = true;
+            hasAutoScrolledRef.current = true;
+
+            // Pause heavy floating animations during scroll for optimal 60 FPS
+            if (floatTweenRef.current) floatTweenRef.current.pause();
+
+            // Fade out the down arrow and hint label
+            if (arrowPulse) arrowPulse.kill();
+            gsap.killTweensOf(downArrowRef.current);
+            gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.35, ease: "power2.in" });
+            
+            gsap.killTweensOf(scrollHintRef.current);
+            gsap.to(scrollHintRef.current, { opacity: 0, y: -10, duration: 0.35, ease: "power2.in" });
+
+            // Ambient bloom glow screen transition
+            if (ambientBloomRef.current) {
+              gsap.fromTo(ambientBloomRef.current,
+                { opacity: 0.18, scale: 1.0 },
+                { opacity: 0.85, scale: 1.8, duration: 0.9, yoyo: true, repeat: 1, ease: "sine.inOut" }
+              );
+            }
+
+            // Launch floating hearts up during scroll
+            if (particlesRef.current) {
+              const hearts = Array.from(particlesRef.current.children)
+                .filter(el => el.dataset.type === "heart")
+                .slice(0, 15);
+              
+              hearts.forEach((el) => {
+                const startX = gsap.utils.random(-window.innerWidth * 0.45, window.innerWidth * 0.45);
+                const startY = window.innerHeight * 0.5 + 50;
+                const targetY = -window.innerHeight * 0.5 - 50;
+                
+                gsap.set(el, { x: startX, y: startY, scale: gsap.utils.random(1.2, 1.8), opacity: 0 });
+                gsap.to(el, { opacity: 0.85, duration: 0.35 });
+                gsap.to(el, {
+                  y: targetY,
+                  x: startX + gsap.utils.random(-120, 120),
+                  rotation: gsap.utils.random(-180, 180),
+                  duration: 1.8,
+                  ease: "sine.out"
+                });
+                gsap.to(el, { opacity: 0, delay: 1.4, duration: 0.4 });
+              });
+            }
+
+            // Smooth programmatic cinematic scroll
+            if ((window as any).lenis) {
+              (window as any).lenis.scrollTo("#friendship-timeline", {
+                duration: 1.8,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+              });
+            } else {
+              document.getElementById("friendship-timeline")?.scrollIntoView({ behavior: "smooth" });
+            }
+
+            // Complete explosion and unmount Hero after scroll finishes
+            setTimeout(() => {
+              setIsExplosionFinished(true);
+              onHeroComplete?.();
+            }, 1800);
+
+            removeListeners();
+            if (observerRef.current) observerRef.current.disconnect();
+          }, 5000);
+        };
 
         const handleUserInteraction = () => {
           if (userInteractedRef.current) return;
           userInteractedRef.current = true;
           
-          if (scrollTimeoutRef.current) {
-            clearTimeout(scrollTimeoutRef.current);
-            scrollTimeoutRef.current = null;
-          }
+          if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
+          if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
           
-          // Instantly fade out arrow and cleanup pulse
+          // Instantly fade out arrow and hint
+          gsap.killTweensOf(scrollHintRef.current);
+          gsap.to(scrollHintRef.current, { opacity: 0, y: 15, duration: 0.35, ease: "power2.in" });
+          
           if (arrowPulse) arrowPulse.kill();
           gsap.killTweensOf(downArrowRef.current);
           gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.3, ease: "power2.in" });
@@ -441,6 +528,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
           }, 1000);
 
           removeListeners();
+          if (observerRef.current) observerRef.current.disconnect();
         };
 
         const removeListeners = () => {
@@ -457,42 +545,25 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
         window.addEventListener("keydown", handleUserInteraction, { passive: true });
         window.addEventListener("scroll", handleUserInteraction, { passive: true });
 
-        // Start 5-second automatic wait
-        scrollTimeoutRef.current = setTimeout(() => {
-          if (userInteractedRef.current) return;
-          isAutoScrollingRef.current = true;
-          sessionStorage.setItem("timelineAutoScrolled", "true");
+        // Set up IntersectionObserver to trigger countdown only when Explore section (final card) becomes visible in viewport
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && !hasAutoScrolledRef.current && !userInteractedRef.current) {
+              startAutoScrollCountdown();
+            }
+          });
+        }, { threshold: 0.15 });
 
-          // Pause heavy floating animations during scroll for optimal 60 FPS
-          if (floatTweenRef.current) floatTweenRef.current.pause();
-
-          // Fade out the down arrow indicator
-          if (arrowPulse) arrowPulse.kill();
-          gsap.killTweensOf(downArrowRef.current);
-          gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.45, ease: "power2.in" });
-
-          // Smooth programmatic cinematic scroll
-          if ((window as any).lenis) {
-            (window as any).lenis.scrollTo("#friendship-timeline", {
-              duration: 1.8,
-              easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
-            });
-          } else {
-            document.getElementById("friendship-timeline")?.scrollIntoView({ behavior: "smooth" });
-          }
-
-          // Complete explosion and unmount Hero after scroll finishes
-          setTimeout(() => {
-            setIsExplosionFinished(true);
-            onHeroComplete?.();
-          }, 1800);
-
-          removeListeners();
-        }, 5000);
+        if (finalRevealRef.current) {
+          observer.observe(finalRevealRef.current);
+        }
+        observerRef.current = observer;
 
         // Safe unmount context hooks
         ctx.add(() => {
+          if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
           if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+          if (observerRef.current) observerRef.current.disconnect();
           removeListeners();
         });
       }, 8.55);
@@ -735,6 +806,15 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5 text-pink-400">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
               </svg>
+            </div>
+
+            {/* Transition Hint Card */}
+            <div 
+              ref={scrollHintRef}
+              className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[155] px-5 py-2.5 rounded-full bg-pink-950/60 border border-pink-500/30 backdrop-blur-md shadow-[0_0_30px_rgba(244,63,94,0.3)] pointer-events-none opacity-0 select-none flex items-center justify-center text-xs text-pink-200 gap-2 tracking-widest font-semibold uppercase animate-pulse"
+              style={{ transform: "translate3d(0, 15px, 0)", willChange: "transform, opacity" }}
+            >
+              ✨ Scrolling to our story...
             </div>
           </div>
         </>
