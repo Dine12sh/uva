@@ -33,7 +33,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
   const particlesRef = useRef<HTMLDivElement>(null);
   const lensFlareRef = useRef<HTMLDivElement>(null);
 
-  const { triggerBalloons, triggerFireworks, triggerHearts, triggerConfetti } = useCelebrationStore();
+  const { triggerBalloons, triggerFireworks, triggerHearts, triggerConfetti, setExploding } = useCelebrationStore();
 
   const handleNext = () => {
     if (isTransitioning) return; // Prevent double triggers
@@ -47,7 +47,6 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       setTimeout(() => setIsTransitioning(false), 800);
     } else {
       setIsExploding(true);
-      const { setExploding } = useCelebrationStore.getState();
       setExploding(true);
     }
   };
