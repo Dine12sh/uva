@@ -63,12 +63,14 @@ const Timeline = React.memo(function Timeline() {
   const lineRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current || !lineRef.current) return;
+    const container = containerRef.current;
+    const line = lineRef.current;
+    if (!container || !line) return;
 
     let ctx = gsap.context(() => {
       // Animate timeline vertical line drawing
       const lineTrigger = gsap.fromTo(
-        lineRef.current,
+        line,
         { scaleY: 0 },
         {
           scaleY: 1,
@@ -83,7 +85,7 @@ const Timeline = React.memo(function Timeline() {
       );
 
       // Animate cards on scroll reveal
-      const cards = containerRef.current.querySelectorAll(".timeline-card");
+      const cards = container.querySelectorAll(".timeline-card");
       cards.forEach((card, idx) => {
         const isLeft = idx % 2 === 0;
         gsap.fromTo(
