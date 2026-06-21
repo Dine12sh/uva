@@ -3,6 +3,7 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import gsap from "gsap";
 
 interface PolaroidScratchCardProps {
   id: number;
@@ -25,6 +26,10 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
 }: PolaroidScratchCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const clickedRef = useRef(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const glowBurstRef = useRef<HTMLSpanElement>(null);
+  const rippleRef = useRef<HTMLSpanElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
   const [showTypewriter, setShowTypewriter] = useState(false);
@@ -207,7 +212,7 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
               priority={isPriority}
               sizes="(max-width: 768px) 16rem, 20rem"
               className="object-cover"
-              onError={(e) => {
+              onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
                 e.currentTarget.style.display = 'none';
               }}
             />
@@ -251,30 +256,84 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
             className="absolute -bottom-16 md:-bottom-24 z-40 scale-90 md:scale-100"
           >
             <motion.button
+              ref={buttonRef}
               disabled={disabled}
-              whileTap={!disabled ? { scale: 0.95 } : {}}
-              onPointerDown={(e) => {
-                if (disabled) return;
+              onPointerDown={(e: React.PointerEvent<HTMLButtonElement>) => {
+                if (disabled || clickedRef.current) return;
+                clickedRef.current = true;
+                
+                // Tiny haptic vibration on mobile
+                if (typeof navigator !== "undefined" && navigator.vibrate) {
+                  try {
+                    navigator.vibrate(10);
+                  } catch (err) {
+                    // Ignore haptic failures (e.g. security permissions)
+                  }
+                }
+                
+                // GSAP click response animation
+                gsap.killTweensOf(e.currentTarget);
+                gsap.to(e.currentTarget, {
+                  scale: 0.92,
+                  duration: 0.08,
+                  ease: "power2.out"
+                });
+                
+                if (glowBurstRef.current) {
+                  gsap.fromTo(glowBurstRef.current,
+                    { scale: 0.8, opacity: 0.8 },
+                    { scale: 2.5, opacity: 0, duration: 0.45, ease: "power2.out" }
+                  );
+                }
+                
+                if (rippleRef.current) {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const y = e.clientY - rect.top;
+                  gsap.set(rippleRef.current, { x, y, scale: 0, opacity: 0.6 });
+                  gsap.to(rippleRef.current, {
+                    scale: 3,
+                    opacity: 0,
+                    duration: 0.5,
+                    ease: "power3.out"
+                  });
+                }
+                
                 // Immediate 0ms trigger
                 onNext();
-                
-                // Immediate visual feedback
-                e.currentTarget.style.transform = "scale(0.95)";
-                e.currentTarget.style.boxShadow = "0 0 60px rgba(244,63,94,1)";
               }}
-              onClick={() => {
-                if (!disabled) onNext();
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                // Prevent duplicate click execution since we handle on pointerdown
+                e.preventDefault();
+                e.stopPropagation();
               }}
               aria-label={isFinal ? "Open My Heart" : "Next Memory"}
-              className={`px-8 py-4 rounded-full font-bold text-lg text-white shadow-2xl transition-all duration-300 ${!disabled && 'hover:scale-105'} ${
-                disabled ? "opacity-50 cursor-not-allowed" : ""
+              className={`relative overflow-hidden px-8 py-4 rounded-full font-bold text-lg text-white shadow-2xl transition-all duration-300 ${
+                disabled ? "opacity-50 cursor-not-allowed" : "hover:scale-105"
               } ${
                 isFinal
-                  ? "bg-gradient-to-r from-red-500 to-pink-600 shadow-[0_0_40px_rgba(244,63,94,0.8)] animate-pulse"
+                  ? "bg-gradient-to-r from-rose-500 to-pink-600 shadow-[0_0_40px_rgba(244,63,94,0.8)]"
                   : "bg-white/10 border border-white/20 backdrop-blur-md hover:bg-white/20 hover:border-pink-300 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
               }`}
+              style={{ transform: "scale(1)", transformOrigin: "center" }}
             >
-              {isFinal ? "💖 Open My Heart" : "Next Memory ➔"}
+              {/* Pink Glow Burst Element */}
+              <span 
+                ref={glowBurstRef}
+                className="absolute inset-0 rounded-full bg-pink-500 blur-md pointer-events-none opacity-0"
+                style={{ transform: "scale(0.8)", mixBlendMode: "screen" }}
+              />
+              
+              {/* Ripple Element */}
+              <span 
+                ref={rippleRef}
+                className="absolute w-10 h-10 -ml-5 -mt-5 bg-white/40 rounded-full pointer-events-none opacity-0"
+                style={{ left: 0, top: 0 }}
+              />
+
+              <span className="relative z-10">
+                {isFinal ? "💖 Open My Heart" : "Next Memory ➔"}
+              </span>
             </motion.button>
           </motion.div>
         )}
