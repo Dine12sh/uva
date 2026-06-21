@@ -472,8 +472,8 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
           gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.45, ease: "power2.in" });
 
           // Smooth programmatic cinematic scroll
-          if (window.lenis) {
-            window.lenis.scrollTo("#friendship-timeline", {
+          if ((window as any).lenis) {
+            (window as any).lenis.scrollTo("#friendship-timeline", {
               duration: 1.8,
               easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
             });

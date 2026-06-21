@@ -56,7 +56,7 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
 
     // Expose lenis globally for programmatic smooth scroll integrations
     if (typeof window !== "undefined") {
-      window.lenis = lenis;
+      (window as any).lenis = lenis;
     }
 
     const raf = (time: number) => {
@@ -69,7 +69,7 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
     return () => {
       lenis.destroy();
       if (typeof window !== "undefined") {
-        window.lenis = undefined as any;
+        (window as any).lenis = undefined;
       }
     };
   }, [showMain]);
