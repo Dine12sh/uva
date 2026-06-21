@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { NetflixIntro } from "./NetflixIntro";
 import { HeartParticleEngine } from "./HeartParticleEngine";
-import { FloatingMemories } from "./FloatingMemories";
+import { MemoryRevealHero } from "./MemoryRevealHero";
 
 export function CinematicHero() {
   const [introComplete, setIntroComplete] = useState(false);
@@ -38,7 +38,7 @@ export function CinematicHero() {
       >
         <HeartParticleEngine />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.15),transparent_50%)] pointer-events-none" />
-        <FloatingMemories onExplode={handleExplosion} />
+        <MemoryRevealHero onExplode={handleExplosion} />
       </div>
     </section>
   );
