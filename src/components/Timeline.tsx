@@ -65,55 +65,51 @@ const Timeline = React.memo(function Timeline() {
   useEffect(() => {
     if (!containerRef.current || !lineRef.current) return;
 
-    // Animate timeline vertical line drawing
-    const lineTrigger = gsap.fromTo(
-      lineRef.current,
-      { scaleY: 0 },
-      {
-        scaleY: 1,
-        ease: "none",
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top 25%",
-          end: "bottom 75%",
-          scrub: true,
-        },
-      }
-    );
-
-    // Animate cards on scroll reveal
-    const cards = containerRef.current.querySelectorAll(".timeline-card");
-    const anims: any[] = [];
-    cards.forEach((card, idx) => {
-      const isLeft = idx % 2 === 0;
-      const tween = gsap.fromTo(
-        card,
+    let ctx = gsap.context(() => {
+      // Animate timeline vertical line drawing
+      const lineTrigger = gsap.fromTo(
+        lineRef.current,
+        { scaleY: 0 },
         {
-          opacity: 0,
-          x: isLeft ? -80 : 80,
-          scale: 0.9,
-        },
-        {
-          opacity: 1,
-          x: 0,
-          scale: 1,
-          duration: 1.4,
-          ease: "power3.out",
+          scaleY: 1,
+          ease: "none",
           scrollTrigger: {
-            trigger: card,
-            start: "top 85%",
-            toggleActions: "play none none reverse",
+            trigger: containerRef.current,
+            start: "top 25%",
+            end: "bottom 75%",
+            scrub: true,
           },
         }
       );
-      anims.push(tween);
-    });
 
-    return () => {
-      lineTrigger.kill();
-      anims.forEach((t) => t.kill());
-      ScrollTrigger.getAll().forEach((t: any) => t.kill());
-    };
+      // Animate cards on scroll reveal
+      const cards = containerRef.current.querySelectorAll(".timeline-card");
+      cards.forEach((card, idx) => {
+        const isLeft = idx % 2 === 0;
+        gsap.fromTo(
+          card,
+          {
+            opacity: 0,
+            x: isLeft ? -80 : 80,
+            scale: 0.9,
+          },
+          {
+            opacity: 1,
+            x: 0,
+            scale: 1,
+            duration: 1.4,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 85%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        );
+      });
+    }, containerRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (

@@ -51,75 +51,78 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
     triggerConfetti();
     triggerHearts();
 
-    const tl = gsap.timeline({
-      onComplete: () => {
-        setIsExplosionFinished(true);
-        setTimeout(() => {
-          onExplode();
-        }, 800);
-      },
-    });
-
-    // 1. Camera Shake on the main wrapper
-    if (containerRef.current) {
-      gsap.to(containerRef.current, {
-        x: () => gsap.utils.random(-25, 25),
-        y: () => gsap.utils.random(-25, 25),
-        rotation: () => gsap.utils.random(-3, 3),
-        duration: 0.1,
-        repeat: 12, // 1.2s of shake
-        yoyo: true,
-        ease: "none",
+    let ctx = gsap.context(() => {
+      const tl = gsap.timeline({
         onComplete: () => {
-          gsap.set(containerRef.current, { x: 0, y: 0, rotation: 0 });
-        }
-      });
-    }
-
-    // 2. Lens Flare Flash
-    if (lensFlareRef.current) {
-      gsap.fromTo(lensFlareRef.current,
-        { opacity: 1, scale: 1 },
-        { opacity: 0, scale: 10, duration: 0.7, ease: "power4.out" }
-      );
-    }
-
-    // 3. Expanding GSAP Heart (Scale to 30)
-    if (heartRef.current) {
-      tl.to(heartRef.current, {
-        scale: 30,
-        opacity: 0,
-        duration: 1.5,
-        ease: "power4.inOut",
-      }, 0);
-    }
-
-    // 4. Image Overlay (IMG-20251207-WA0025.jpg) appearing through the pink light
-    if (overlayImageRef.current) {
-      tl.fromTo(overlayImageRef.current, 
-        { opacity: 0, scale: 0.8 }, 
-        { opacity: 0, scale: 1, duration: 1.5, ease: "power3.out" }, 
-      0.5);
-    }
-
-    // 5. Flying Particles (Photos, Petals, Hearts, Sparks)
-    if (particlesRef.current) {
-      const particles = Array.from(particlesRef.current.children);
-      tl.fromTo(particles, 
-        { x: 0, y: 0, scale: 0, opacity: 1 },
-        {
-          x: () => gsap.utils.random(-window.innerWidth, window.innerWidth),
-          y: () => gsap.utils.random(-window.innerHeight, window.innerHeight),
-          rotation: () => gsap.utils.random(-720, 720),
-          scale: () => gsap.utils.random(0.5, 2.5),
-          opacity: 0,
-          duration: () => gsap.utils.random(1.5, 3),
-          ease: "expo.out",
-          stagger: 0.01,
+          setIsExplosionFinished(true);
+          setTimeout(() => {
+            onExplode();
+          }, 800);
         },
-      0.1);
-    }
+      });
 
+      // 1. Camera Shake on the main wrapper
+      if (containerRef.current) {
+        gsap.to(containerRef.current, {
+          x: () => gsap.utils.random(-25, 25),
+          y: () => gsap.utils.random(-25, 25),
+          rotation: () => gsap.utils.random(-3, 3),
+          duration: 0.1,
+          repeat: 12, // 1.2s of shake
+          yoyo: true,
+          ease: "none",
+          onComplete: () => {
+            gsap.set(containerRef.current, { x: 0, y: 0, rotation: 0 });
+          }
+        });
+      }
+
+      // 2. Lens Flare Flash
+      if (lensFlareRef.current) {
+        gsap.fromTo(lensFlareRef.current,
+          { opacity: 1, scale: 1 },
+          { opacity: 0, scale: 10, duration: 0.7, ease: "power4.out" }
+        );
+      }
+
+      // 3. Expanding GSAP Heart (Scale to 30)
+      if (heartRef.current) {
+        tl.to(heartRef.current, {
+          scale: 30,
+          opacity: 0,
+          duration: 1.5,
+          ease: "power4.inOut",
+        }, 0);
+      }
+
+      // 4. Image Overlay (IMG-20251207-WA0025.jpg) appearing through the pink light
+      if (overlayImageRef.current) {
+        tl.fromTo(overlayImageRef.current, 
+          { opacity: 0, scale: 0.8 }, 
+          { opacity: 1, scale: 1, duration: 1.5, ease: "power3.out" }, 
+        0.5);
+      }
+
+      // 5. Flying Particles (Photos, Petals, Hearts, Sparks)
+      if (particlesRef.current) {
+        const particles = Array.from(particlesRef.current.children);
+        tl.fromTo(particles, 
+          { x: 0, y: 0, scale: 0, opacity: 1 },
+          {
+            x: () => gsap.utils.random(-window.innerWidth, window.innerWidth),
+            y: () => gsap.utils.random(-window.innerHeight, window.innerHeight),
+            rotation: () => gsap.utils.random(-720, 720),
+            scale: () => gsap.utils.random(0.5, 2.5),
+            opacity: 0,
+            duration: () => gsap.utils.random(1.5, 3),
+            ease: "expo.out",
+            stagger: 0.01,
+          },
+        0.1);
+      }
+    }, containerRef); // Scope to containerRef for strict cleanup
+
+    return () => ctx.revert(); // Kill all timelines on unmount
   }, [isExploding, triggerConfetti, triggerFireworks, triggerHearts, onExplode]);
 
   const progressPercentage = ((currentIndex + 1) / MEMORIES.length) * 100;
@@ -226,8 +229,9 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
           >
             <Image 
               src="/media/IMG-20251207-WA0025.jpg"
-              alt="Overlay Memory"
+              alt="Overlay Memory Snapshot"
               fill
+              unoptimized={true}
               className="object-cover"
               onError={(e) => {
                 // Fallback image
@@ -256,8 +260,9 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
                     <div className="relative w-full h-full bg-black">
                       <Image 
                         src={MEMORIES[i % MEMORIES.length].url} 
-                        alt="flying photo" 
+                        alt={`Flying memory photo ${i}`} 
                         fill 
+                        unoptimized={true}
                         className="object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
