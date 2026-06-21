@@ -27,7 +27,7 @@ export default function AtmosphericBackground() {
           y: ["-20%", "0%", "-20%"]
         }}
         transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -top-1/4 -left-1/4 w-[80vw] h-[80vw] rounded-full bg-pink-600/10 blur-[120px] mix-blend-screen"
+        className="absolute -top-1/4 -left-1/4 w-[80vw] h-[80vw] rounded-full mix-blend-screen bg-[radial-gradient(circle,rgba(219,39,119,0.15)_0%,transparent_60%)]"
       />
 
       {/* Aurora Effects - Bottom / Right */}
@@ -40,7 +40,7 @@ export default function AtmosphericBackground() {
           y: ["20%", "0%", "20%"]
         }}
         transition={{ duration: 30, repeat: Infinity, ease: "easeInOut", delay: 5 }}
-        className="absolute -bottom-1/4 -right-1/4 w-[90vw] h-[90vw] rounded-full bg-rose-500/10 blur-[150px] mix-blend-screen"
+        className="absolute -bottom-1/4 -right-1/4 w-[90vw] h-[90vw] rounded-full mix-blend-screen bg-[radial-gradient(circle,rgba(244,63,94,0.15)_0%,transparent_60%)]"
       />
 
       {/* CSS-only Floating Particles — replaces 40 Framer Motion divs with window.innerHeight */}

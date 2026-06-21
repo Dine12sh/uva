@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+// @ts-ignore
 import { Play, Pause, Volume2, VolumeX, X, Maximize } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -16,29 +17,29 @@ interface VideoSectionProps {
   memories: VideoMemory[];
 }
 
-export default function VideoSection({ memories }: VideoSectionProps) {
+const VideoSection = React.memo(function VideoSection({ memories }: VideoSectionProps) {
   const [activeVideo, setActiveVideo] = useState<VideoMemory | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});
 
-  const videoMemories = memories.filter((m) => m.type === "video");
+  const videoMemories = React.useMemo(() => memories.filter((m) => m.type === "video"), [memories]);
 
-  const handleMouseEnter = (id: string) => {
+  const handleMouseEnter = React.useCallback((id: string) => {
     setHoveredId(id);
-    const video = videoRefs.current[id];
+    const video = videoRefs.current?.[id];
     if (video) {
       video.play().catch(() => {});
     }
-  };
+  }, []);
 
-  const handleMouseLeave = (id: string) => {
+  const handleMouseLeave = React.useCallback((id: string) => {
     setHoveredId(null);
-    const video = videoRefs.current[id];
+    const video = videoRefs.current?.[id];
     if (video) {
       video.pause();
       video.currentTime = 0;
     }
-  };
+  }, []);
 
   return (
     <section id="video-memories" className="relative py-24 px-6 md:px-16 overflow-hidden bg-black/80">
@@ -72,7 +73,7 @@ export default function VideoSection({ memories }: VideoSectionProps) {
 
         {/* Video Grid / Shelf */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {videoMemories.map((vid, index) => (
+          {videoMemories.map((vid: VideoMemory, index: number) => (
             <motion.div
               key={vid.id}
               initial={{ opacity: 0, y: 40 }}
@@ -91,8 +92,10 @@ export default function VideoSection({ memories }: VideoSectionProps) {
             >
               {/* HTML5 Video preview */}
               <video
-                ref={(el) => {
-                  videoRefs.current[vid.id] = el;
+                ref={(el: HTMLVideoElement | null) => {
+                  if (videoRefs.current) {
+                    videoRefs.current[vid.id] = el;
+                  }
                 }}
                 src={vid.url}
                 muted
@@ -139,7 +142,8 @@ export default function VideoSection({ memories }: VideoSectionProps) {
             <div className="absolute top-4 right-6 flex items-center gap-4 z-55">
               <button
                 onClick={() => setActiveVideo(null)}
-                className="p-3 rounded-full bg-white/5 hover:bg-white/15 text-white/70 hover:text-white transition-all cursor-pointer"
+                className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/5 hover:bg-white/15 text-white/70 hover:text-white transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-pink-500"
+                aria-label="Close video player"
               >
                 <X size={20} />
               </button>
@@ -164,4 +168,6 @@ export default function VideoSection({ memories }: VideoSectionProps) {
       </AnimatePresence>
     </section>
   );
-}
+});
+
+export default VideoSection;

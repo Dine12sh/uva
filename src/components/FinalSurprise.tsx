@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useCelebrationStore } from "../store/useCelebrationStore";
+// @ts-ignore
 import Image from "next/image";
 
 const collagePhotos = [
@@ -65,8 +66,9 @@ export default function FinalSurprise() {
               alt="Ending Background Collage"
               fill
               sizes="(max-width: 768px) 50vw, 25vw"
+              placeholder="blur"
+              blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
               className="object-cover"
-              unoptimized
             />
           </div>
         ))}

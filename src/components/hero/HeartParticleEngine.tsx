@@ -26,7 +26,7 @@ export function HeartParticleEngine() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animationFrameId: number;
+    let animationFrameId: number | null = null;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -36,7 +36,13 @@ export function HeartParticleEngine() {
     window.addEventListener("resize", resize);
     resize();
 
+    // Throttled mouse move
+    let lastMouseTime = 0;
     const handleMouseMove = (e: MouseEvent) => {
+      const now = performance.now();
+      if (now - lastMouseTime < 16) return; // Limit to ~60hz
+      lastMouseTime = now;
+
       mouseRef.current = { x: e.clientX, y: e.clientY };
       
       // Cap max particles to prevent memory leak
@@ -48,13 +54,18 @@ export function HeartParticleEngine() {
           x: e.clientX,
           y: e.clientY,
           vx: (Math.random() - 0.5) * 4,
-          vy: (Math.random() - 0.5) * 4 - 1, // Slight upward bias
+          vy: (Math.random() - 0.5) * 4 - 1,
           life: 0,
           maxLife: 60 + Math.random() * 40,
           size: Math.random() * 4 + 2,
           color: `hsl(${330 + Math.random() * 30}, 100%, 70%)`,
           type: Math.random() > 0.3 ? "sparkle" : "heart",
         });
+      }
+
+      // Wake up loop if sleeping
+      if (!animationFrameId) {
+        render();
       }
     };
 
@@ -89,7 +100,10 @@ export function HeartParticleEngine() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const particles = particlesRef.current;
-      if (!particles) return;
+      if (!particles || particles.length === 0) {
+        animationFrameId = null; // Sleep
+        return;
+      }
 
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
@@ -123,12 +137,15 @@ export function HeartParticleEngine() {
       animationFrameId = requestAnimationFrame(render);
     };
 
+    // Initial render call
     render();
 
     return () => {
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", handleMouseMove);
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
     };
   }, []);
 

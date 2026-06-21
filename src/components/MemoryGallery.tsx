@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+// @ts-ignore
 import { Maximize2, Minimize2, Play, Pause, ChevronLeft, ChevronRight, X } from "lucide-react";
+// @ts-ignore
 import Image from "next/image";
 
 interface Memory {
@@ -101,8 +103,8 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
       className="relative w-full overflow-hidden bg-[#0a0a0a] py-24 px-6 md:px-16"
     >
       {/* Aurora Glow Backgrounds */}
-      <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-rose-500/10 rounded-full blur-[120px] mix-blend-screen animate-[pulse_8s_ease-in-out_infinite]" />
-      <div className="absolute bottom-1/4 right-1/4 w-[50vw] h-[50vw] bg-amber-500/10 rounded-full blur-[150px] mix-blend-screen animate-[pulse_12s_ease-in-out_infinite_reverse]" />
+      <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-[radial-gradient(circle,rgba(244,63,94,0.15)_0%,transparent_60%)] rounded-full mix-blend-screen animate-[pulse_8s_ease-in-out_infinite]" />
+      <div className="absolute bottom-1/4 right-1/4 w-[50vw] h-[50vw] bg-[radial-gradient(circle,rgba(245,158,11,0.15)_0%,transparent_60%)] rounded-full mix-blend-screen animate-[pulse_12s_ease-in-out_infinite_reverse]" />
 
       {/* CSS Particles (replacing FloatingParticles canvas) */}
       {[...Array(10)].map((_, i) => (
@@ -167,9 +169,10 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
                     src={img.url}
                     alt={img.caption || "Memory photo"}
                     fill
-                    sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                    placeholder="blur"
+                    blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
                     className="object-cover transform transition-transform duration-[2000ms] ease-out group-hover:scale-110 brightness-90 group-hover:brightness-110"
-                    unoptimized
                   />
                   
                   {/* Glass Reflection Sweep */}
@@ -213,21 +216,24 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => setIsPlaying(!isPlaying)}
-                  className="p-3 rounded-full bg-white/5 hover:bg-white/20 transition-colors cursor-pointer text-white/70 hover:text-white backdrop-blur-md border border-white/10"
+                  className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/5 hover:bg-white/20 transition-colors cursor-pointer text-white/70 hover:text-white backdrop-blur-md border border-white/10 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  aria-label={isPlaying ? "Pause slideshow" : "Play slideshow"}
                 >
                   {isPlaying ? <Pause size={16} /> : <Play size={16} />}
                 </button>
 
                 <button
                   onClick={toggleFullscreen}
-                  className="p-3 rounded-full bg-white/5 hover:bg-white/20 transition-colors cursor-pointer text-white/70 hover:text-white backdrop-blur-md border border-white/10"
+                  className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/5 hover:bg-white/20 transition-colors cursor-pointer text-white/70 hover:text-white backdrop-blur-md border border-white/10 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
                 >
                   {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
                 </button>
 
                 <button
                   onClick={closeLightbox}
-                  className="p-3 rounded-full bg-white/5 hover:bg-white/20 transition-colors cursor-pointer text-white/70 hover:text-white backdrop-blur-md border border-white/10"
+                  className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/5 hover:bg-white/20 transition-colors cursor-pointer text-white/70 hover:text-white backdrop-blur-md border border-white/10 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  aria-label="Close lightbox"
                 >
                   <X size={16} />
                 </button>
@@ -236,8 +242,9 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
 
             {/* Left navigation arrow */}
             <button
-              onClick={(e) => { e.stopPropagation(); navigate(-1); }}
-              className="absolute left-8 p-4 rounded-full bg-white/0 hover:bg-white/10 text-white/40 hover:text-white transition-all cursor-pointer z-50 hidden md:block border border-transparent hover:border-white/10 backdrop-blur-sm"
+              onClick={(e: any) => { e.stopPropagation(); navigate(-1); }}
+              className="absolute left-8 p-4 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/0 hover:bg-white/10 text-white/40 hover:text-white transition-all cursor-pointer z-50 hidden md:flex border border-transparent hover:border-white/10 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+              aria-label="Previous image"
             >
               <ChevronLeft size={32} strokeWidth={1} />
             </button>
@@ -254,7 +261,7 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
                 exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 className="relative max-w-[90vw] max-h-[80vh] z-40"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e: any) => e.stopPropagation()}
               >
                 <Image
                   src={images[lightboxIndex].url}
@@ -262,7 +269,8 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
                   width={1200}
                   height={900}
                   className="max-w-[90vw] max-h-[80vh] w-auto h-auto object-contain rounded-sm shadow-[0_30px_80px_rgba(0,0,0,0.8)] border border-white/10"
-                  unoptimized
+                  placeholder="blur"
+                  blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
                   priority
                 />
               </motion.div>
@@ -282,8 +290,9 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
 
             {/* Right navigation arrow */}
             <button
-              onClick={(e) => { e.stopPropagation(); navigate(1); }}
-              className="absolute right-8 p-4 rounded-full bg-white/0 hover:bg-white/10 text-white/40 hover:text-white transition-all cursor-pointer z-50 hidden md:block border border-transparent hover:border-white/10 backdrop-blur-sm"
+              onClick={(e: any) => { e.stopPropagation(); navigate(1); }}
+              className="absolute right-8 p-4 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full bg-white/0 hover:bg-white/10 text-white/40 hover:text-white transition-all cursor-pointer z-50 hidden md:flex border border-transparent hover:border-white/10 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+              aria-label="Next image"
             >
               <ChevronRight size={32} strokeWidth={1} />
             </button>
@@ -291,13 +300,13 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
             {/* Mobile Navigation */}
             <div className="absolute bottom-8 flex gap-4 md:hidden z-50">
               <button
-                onClick={(e) => { e.stopPropagation(); navigate(-1); }}
+                onClick={(e: any) => { e.stopPropagation(); navigate(-1); }}
                 className="px-6 py-3 rounded-full bg-white/10 text-xs tracking-widest uppercase font-light flex items-center gap-2 backdrop-blur-md border border-white/10"
               >
                 <ChevronLeft size={14} /> Prev
               </button>
               <button
-                onClick={(e) => { e.stopPropagation(); navigate(1); }}
+                onClick={(e: any) => { e.stopPropagation(); navigate(1); }}
                 className="px-6 py-3 rounded-full bg-white/10 text-xs tracking-widest uppercase font-light flex items-center gap-2 backdrop-blur-md border border-white/10"
               >
                 Next <ChevronRight size={14} />

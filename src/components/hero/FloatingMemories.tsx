@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import React, { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import gsap from "gsap";
+// @ts-ignore
 import Image from "next/image";
 
 interface FloatingMemoriesProps {
@@ -18,7 +19,7 @@ const MEMORIES = [
   { id: 5, x: 0, y: -40, z: -80, rotate: 5, scale: 0.85, url: "/media/IMG_20260614_180315.jpg" },
 ];
 
-export function FloatingMemories({ onExplode }: FloatingMemoriesProps) {
+export const FloatingMemories = React.memo(function FloatingMemories({ onExplode }: FloatingMemoriesProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const heartRef = useRef<HTMLButtonElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -139,4 +140,4 @@ export function FloatingMemories({ onExplode }: FloatingMemoriesProps) {
       </motion.div>
     </div>
   );
-}
+});

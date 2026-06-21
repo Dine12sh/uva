@@ -58,7 +58,8 @@ export function NetflixIntro({ onComplete }: NetflixIntroProps) {
     >
       <h1
         ref={textRef}
-        className="text-6xl md:text-8xl lg:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-br from-red-600 via-rose-500 to-red-900 tracking-tighter uppercase drop-shadow-[0_0_50px_rgba(220,38,38,0.8)]"
+        className="font-black text-transparent bg-clip-text bg-gradient-to-br from-red-600 via-rose-500 to-red-900 tracking-tighter uppercase drop-shadow-[0_0_50px_rgba(220,38,38,0.8)] leading-none text-center"
+        style={{ fontSize: "clamp(3.5rem, 15vw, 10rem)" }}
       >
         Happy Birthday
       </h1>

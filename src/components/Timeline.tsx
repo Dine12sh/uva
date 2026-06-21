@@ -58,7 +58,7 @@ const timelineData: TimelineItem[] = [
   },
 ];
 
-export default function Timeline() {
+const Timeline = React.memo(function Timeline() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const lineRef = useRef<HTMLDivElement | null>(null);
 
@@ -179,8 +179,9 @@ export default function Timeline() {
                               alt={`Memory photo ${pIdx + 1}`}
                               fill
                               sizes="(max-width: 768px) 45vw, 20vw"
+                              placeholder="blur"
+                              blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
                               className="object-cover transform scale-105 group-hover/photo:scale-[1.2] transition-transform duration-[1500ms] ease-out origin-center"
-                              unoptimized
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/photo:opacity-100 transition-opacity duration-700 mix-blend-overlay" />
                           </div>
@@ -199,4 +200,6 @@ export default function Timeline() {
       </div>
     </section>
   );
-}
+});
+
+export default Timeline;

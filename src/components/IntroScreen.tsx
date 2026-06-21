@@ -11,7 +11,8 @@ interface IntroScreenProps {
 
 export default function IntroScreen({ onComplete }: IntroScreenProps) {
   const [stage, setStage] = useState<"text" | "gift" | "opening" | "complete">("text");
-  const setPlaying = useMusicStore((state) => state.setPlaying);
+  // @ts-ignore
+  const setPlaying = useMusicStore((state: any) => state.setPlaying);
   
   const { triggerFireworks, triggerBalloons, triggerConfetti } = useCelebrationStore();
 
@@ -71,8 +72,8 @@ export default function IntroScreen({ onComplete }: IntroScreenProps) {
         ))}
         
         {/* Soft Aurora Glow Lights */}
-        <div className="absolute -top-40 left-1/4 h-[400px] w-[400px] rounded-full bg-purple-900/20 blur-[120px] animate-pulse duration-[8000ms]" />
-        <div className="absolute -bottom-40 right-1/4 h-[400px] w-[400px] rounded-full bg-pink-900/20 blur-[120px] animate-pulse duration-[10000ms]" />
+        <div className="absolute -top-40 left-1/4 h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,rgba(88,28,135,0.25)_0%,transparent_60%)] animate-pulse duration-[8000ms]" />
+        <div className="absolute -bottom-40 right-1/4 h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,rgba(131,24,67,0.25)_0%,transparent_60%)] animate-pulse duration-[10000ms]" />
       </div>
 
       <AnimatePresence mode="wait">
