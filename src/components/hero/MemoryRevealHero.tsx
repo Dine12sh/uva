@@ -39,6 +39,13 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
   const finalRevealRef = useRef<HTMLDivElement>(null);
   const finalPhotoRef = useRef<HTMLDivElement>(null);
   const ambientBloomRef = useRef<HTMLDivElement>(null);
+  
+  // Climax auto scroll refs
+  const downArrowRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isAutoScrollingRef = useRef(false);
+  const userInteractedRef = useRef(false);
+  const floatTweenRef = useRef<gsap.core.Tween | null>(null);
 
   const { triggerBalloons, triggerFireworks, triggerHearts, triggerConfetti, setExploding } = useCelebrationStore();
 
@@ -61,18 +68,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
     let ctx = gsap.context(() => {
       const isMobile = window.innerWidth < 768;
-      const tl = gsap.timeline({
-        onComplete: () => {
-          // Scroll smoothly to timeline
-          onExplode();
-          
-          // Collapse and unmount hero after scroll starts
-          setTimeout(() => {
-            setIsExplosionFinished(true);
-            onHeroComplete?.();
-          }, 800);
-        },
-      });
+      const tl = gsap.timeline();
 
       // Prepare initial states of all elements to prevent FOUC (flash of unstyled content)
       gsap.set([heartRef.current, radialRaysRef.current, lightRingRef.current, shockwaveRef.current, memoryBurstRef.current, finalRevealRef.current], {
@@ -386,7 +382,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       tl.to(finalRevealRef.current, { opacity: 1, scale: 1.0, duration: 0.8, ease: "power3.out" }, 7.05);
       
       // Floating animation
-      tl.to(finalPhotoRef.current, {
+      const floatTween = gsap.to(finalPhotoRef.current, {
         y: -10,
         rotation: 5,
         duration: 1.6,
@@ -394,6 +390,113 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
         repeat: -1,
         ease: "sine.inOut"
       }, 7.45);
+      
+      floatTweenRef.current = floatTween;
+
+      // Down arrow fade in and gentle pulse
+      tl.to(downArrowRef.current, { opacity: 0.9, y: 0, duration: 0.8, ease: "power2.out" }, 7.05);
+      
+      const arrowPulse = gsap.to(downArrowRef.current, {
+        y: 8,
+        opacity: 0.5,
+        duration: 1.0,
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut"
+      }, 7.85);
+
+      // ==========================================
+      // CINEMATIC CLIMAX AUTO-SCROLL CONTROLLER
+      // ==========================================
+      tl.add(() => {
+        // Prevent multiple scroll triggers
+        if (sessionStorage.getItem("timelineAutoScrolled") === "true") {
+          onExplode();
+          setTimeout(() => {
+            setIsExplosionFinished(true);
+            onHeroComplete?.();
+          }, 800);
+          return;
+        }
+
+        const handleUserInteraction = () => {
+          if (userInteractedRef.current) return;
+          userInteractedRef.current = true;
+          
+          if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+            scrollTimeoutRef.current = null;
+          }
+          
+          // Instantly fade out arrow and cleanup pulse
+          if (arrowPulse) arrowPulse.kill();
+          gsap.killTweensOf(downArrowRef.current);
+          gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.3, ease: "power2.in" });
+          
+          // Proceed with native user scroll, clear hero overlay
+          onExplode();
+          setTimeout(() => {
+            setIsExplosionFinished(true);
+            onHeroComplete?.();
+          }, 1000);
+
+          removeListeners();
+        };
+
+        const removeListeners = () => {
+          window.removeEventListener("wheel", handleUserInteraction);
+          window.removeEventListener("touchmove", handleUserInteraction);
+          window.removeEventListener("pointerdown", handleUserInteraction);
+          window.removeEventListener("keydown", handleUserInteraction);
+          window.removeEventListener("scroll", handleUserInteraction);
+        };
+
+        window.addEventListener("wheel", handleUserInteraction, { passive: true });
+        window.addEventListener("touchmove", handleUserInteraction, { passive: true });
+        window.addEventListener("pointerdown", handleUserInteraction, { passive: true });
+        window.addEventListener("keydown", handleUserInteraction, { passive: true });
+        window.addEventListener("scroll", handleUserInteraction, { passive: true });
+
+        // Start 5-second automatic wait
+        scrollTimeoutRef.current = setTimeout(() => {
+          if (userInteractedRef.current) return;
+          isAutoScrollingRef.current = true;
+          sessionStorage.setItem("timelineAutoScrolled", "true");
+
+          // Pause heavy floating animations during scroll for optimal 60 FPS
+          if (floatTweenRef.current) floatTweenRef.current.pause();
+
+          // Fade out the down arrow indicator
+          if (arrowPulse) arrowPulse.kill();
+          gsap.killTweensOf(downArrowRef.current);
+          gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.45, ease: "power2.in" });
+
+          // Smooth programmatic cinematic scroll
+          if (window.lenis) {
+            window.lenis.scrollTo("#friendship-timeline", {
+              duration: 1.8,
+              easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+            });
+          } else {
+            document.getElementById("friendship-timeline")?.scrollIntoView({ behavior: "smooth" });
+          }
+
+          // Complete explosion and unmount Hero after scroll finishes
+          setTimeout(() => {
+            setIsExplosionFinished(true);
+            onHeroComplete?.();
+          }, 1800);
+
+          removeListeners();
+        }, 5000);
+
+        // Safe unmount context hooks
+        ctx.add(() => {
+          if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+          removeListeners();
+        });
+      }, 8.55);
+
     }, containerRef);
 
     return () => ctx.revert();
@@ -618,6 +721,20 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
               <p className="text-zinc-200 text-center font-serif italic text-xs md:text-sm leading-relaxed max-w-[280px]">
                 "You make every single moment brighter. Wishing you a year as beautiful and special as you are." ✨
               </p>
+            </div>
+
+            {/* Subtle Down Arrow Cue for Scroll */}
+            <div 
+              ref={downArrowRef} 
+              className="absolute bottom-6 flex flex-col items-center gap-1.5 text-pink-300 opacity-0 select-none pointer-events-none"
+              style={{ transform: "translate3d(0, 15px, 0)", willChange: "transform, opacity" }}
+            >
+              <span className="text-[10px] font-sans uppercase tracking-widest opacity-80 font-semibold drop-shadow-md">
+                Scroll to Explore
+              </span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5 text-pink-400">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
             </div>
           </div>
         </>

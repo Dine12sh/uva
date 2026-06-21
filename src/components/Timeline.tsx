@@ -96,45 +96,42 @@ const Timeline = React.memo(function Timeline() {
         }
       );
 
-      // Animate cards on scroll reveal
-      const cards = container.querySelectorAll(".timeline-card");
-      cards.forEach((card, idx) => {
-        const isLeft = idx % 2 === 0;
-        
-        if (idx === 0) {
-          // Eagerly animate the first card so it's visible without scrolling
-          gsap.fromTo(
-            card,
-            { opacity: 0, x: isLeft ? -80 : 80, scale: 0.9 },
-            {
-              opacity: 1,
-              x: 0,
-              scale: 1,
-              duration: 1.0,
-              delay: 0.6, // Fire right after the eager line draw starts
-              ease: "power3.out",
-            }
-          );
-        } else {
-          // Normal scroll-triggered animation for the rest of the cards
-          gsap.fromTo(
-            card,
-            { opacity: 0, x: isLeft ? -80 : 80, scale: 0.9 },
-            {
-              opacity: 1,
-              x: 0,
-              scale: 1,
-              duration: 1.0,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: card,
-                start: "top 85%",
-                toggleActions: "play none none reverse",
-              },
-            }
-          );
+      // 3. Fade up the entire timeline section container when it enters viewport
+      gsap.fromTo(
+        container,
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1.0,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: container,
+            start: "top 85%",
+            once: true,
+          }
         }
-      });
+      );
+
+      // 4. Stagger reveal all memory cards as timeline enters viewport
+      const cards = container.querySelectorAll(".timeline-card");
+      gsap.fromTo(
+        cards,
+        { opacity: 0, y: 50, scale: 0.95 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.9,
+          stagger: 0.15,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: container,
+            start: "top 75%",
+            once: true,
+          }
+        }
+      );
     }, containerRef);
 
     return () => ctx.revert();
