@@ -26,7 +26,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
   const [isExploding, setIsExploding] = useState(false);
   const [isExplosionFinished, setIsExplosionFinished] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  
+
   const containerRef = useRef<HTMLDivElement>(null);
   const heartRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef<HTMLDivElement>(null);
@@ -39,13 +39,13 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
   const finalRevealRef = useRef<HTMLDivElement>(null);
   const finalPhotoRef = useRef<HTMLDivElement>(null);
   const ambientBloomRef = useRef<HTMLDivElement>(null);
-  
+
   // Climax auto scroll & hint refs
   const downArrowRef = useRef<HTMLDivElement>(null);
   const scrollHintRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const hasAutoScrolledRef = useRef(false);
-  
+
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hintTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isAutoScrollingRef = useRef(false);
@@ -57,7 +57,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
   const handleNext = () => {
     if (isTransitioning) return;
     setIsTransitioning(true);
-    
+
     if (currentIndex < MEMORIES.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       if (currentIndex === 1) triggerBalloons();
@@ -87,10 +87,10 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       tl.set(heartRef.current, { opacity: 1, scale: 1 }, 0);
       tl.to(heartRef.current, { scale: 1.08, duration: 0.25, ease: "power2.inOut" }, 0)
         .to(heartRef.current, { scale: 1.0, duration: 0.25, ease: "power2.inOut" }, 0.25);
-      
+
       // Ambient light bloom starts
       tl.to(ambientBloomRef.current, { opacity: 0.4, scale: 1.2, duration: 0.5, ease: "power2.out" }, 0);
-      
+
       // Background darkens slightly
       tl.to(containerRef.current, { backgroundColor: "#020202", duration: 0.5, ease: "power2.out" }, 0);
 
@@ -99,13 +99,13 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
         const allParticles = Array.from(particlesRef.current.children);
         const awakeningCount = isMobile ? 8 : 15;
         const awakeningParticles = allParticles.slice(0, awakeningCount);
-        
+
         awakeningParticles.forEach((p) => {
           const angle = Math.random() * Math.PI * 2;
           const radius = gsap.utils.random(35, 70);
           const startX = Math.cos(angle) * radius;
           const startY = Math.sin(angle) * radius;
-          
+
           gsap.set(p, { x: startX, y: startY, scale: 0, opacity: 0 });
           tl.to(p, {
             x: startX + Math.cos(angle) * 30,
@@ -124,7 +124,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       // Slight elegant camera shake to build anticipation
       const shakeAmp = isMobile ? 3 : 8;
       const rotAmp = isMobile ? 0.3 : 0.8;
-      
+
       tl.to(containerRef.current, {
         x: () => gsap.utils.random(-shakeAmp, shakeAmp),
         y: () => gsap.utils.random(-shakeAmp, shakeAmp),
@@ -134,7 +134,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
         yoyo: true,
         ease: "none"
       }, 0.5);
-      
+
       // Reset position at the end of shake
       tl.set(containerRef.current, { x: 0, y: 0, rotation: 0 }, 0.9);
 
@@ -150,7 +150,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       tl.set(radialRaysRef.current, { opacity: 0, scale: 0.4 }, 0.9);
       tl.to(radialRaysRef.current, { opacity: 0.95, scale: 1.6, duration: 0.6, ease: "power3.in" }, 0.9);
       tl.to(ambientBloomRef.current, { opacity: 1, scale: 2.8, duration: 0.6, ease: "power3.in" }, 0.9);
-      
+
       // Lens flare across heart
       tl.set(lensFlareRef.current, { opacity: 0, scaleX: 0, scaleY: 1 }, 0.9);
       tl.to(lensFlareRef.current, { opacity: 1, scaleX: 2.5, scaleY: 1.8, duration: 0.35, ease: "power2.out" }, 0.9)
@@ -178,14 +178,14 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       // Circular shockwave
       tl.set(shockwaveRef.current, { opacity: 1, scale: 0.2 }, 1.5);
       tl.to(shockwaveRef.current, { opacity: 0, scale: 6.5, duration: 0.8, ease: "expo.out" }, 1.5);
-      
+
       // Fade out rays
       tl.to(radialRaysRef.current, { opacity: 0, scale: 3.5, duration: 0.5, ease: "power2.out" }, 1.5);
 
       // Explosion Particles (Mini hearts, sparkles, petals)
       if (particlesRef.current) {
         const allParticles = Array.from(particlesRef.current.children);
-        
+
         const heartsLimit = isMobile ? 20 : 50;
         const sparklesLimit = isMobile ? 20 : 60;
         const petalsLimit = isMobile ? 10 : 40;
@@ -247,7 +247,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
         cards.forEach((card, i) => {
           const dir = directions[i % directions.length];
-          
+
           gsap.set(card, {
             x: 0,
             y: 0,
@@ -271,23 +271,23 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
             duration: 0.65,
             ease: "power2.out"
           }, 2.55)
-          // Slow drift motion
-          .to(card, {
-            x: dir.x * 1.12,
-            y: dir.y * 1.12,
-            rotation: dir.rot + gsap.utils.random(-6, 6),
-            duration: 0.95,
-            ease: "sine.inOut"
-          }, 3.2)
-          // Fade away at end of Phase 6
-          .to(card, {
-            opacity: 0,
-            scale: 0.75,
-            filter: "blur(10px)",
-            z: 120,
-            duration: 0.45,
-            ease: "power2.in"
-          }, 3.6);
+            // Slow drift motion
+            .to(card, {
+              x: dir.x * 1.12,
+              y: dir.y * 1.12,
+              rotation: dir.rot + gsap.utils.random(-6, 6),
+              duration: 0.95,
+              ease: "sine.inOut"
+            }, 3.2)
+            // Fade away at end of Phase 6
+            .to(card, {
+              opacity: 0,
+              scale: 0.75,
+              filter: "blur(10px)",
+              z: 120,
+              duration: 0.45,
+              ease: "power2.in"
+            }, 3.6);
         });
       }
 
@@ -305,7 +305,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       // Layered depth floating particles rising from bottom
       if (particlesRef.current) {
         const allParticles = Array.from(particlesRef.current.children);
-        
+
         const heartsLimit = isMobile ? 20 : 50;
         const sparklesLimit = isMobile ? 20 : 60;
         const petalsLimit = isMobile ? 10 : 40;
@@ -318,7 +318,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
           elements.forEach((el, index) => {
             const depth = index % 3;
             let scale, duration, blur, opacity;
-            
+
             if (depth === 0) {
               // Far layer: smaller & slower
               scale = gsap.utils.random(0.3, 0.55);
@@ -359,18 +359,18 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
               duration: 0.3,
               ease: "power1.out"
             }, 4.05)
-            .to(el, {
-              x: endX,
-              y: endY,
-              rotation: gsap.utils.random(-150, 150),
-              duration: duration,
-              ease: "none"
-            }, 4.05)
-            .to(el, {
-              opacity: 0,
-              duration: 0.4,
-              ease: "power1.in"
-            }, 4.05 + duration - 0.4);
+              .to(el, {
+                x: endX,
+                y: endY,
+                rotation: gsap.utils.random(-150, 150),
+                duration: duration,
+                ease: "none"
+              }, 4.05)
+              .to(el, {
+                opacity: 0,
+                duration: 0.4,
+                ease: "power1.in"
+              }, 4.05 + duration - 0.4);
           });
         };
 
@@ -385,7 +385,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       // Reveal the final birthday card and photo
       tl.set(finalRevealRef.current, { display: "flex", opacity: 0, scale: 0.94 }, 7.05);
       tl.to(finalRevealRef.current, { opacity: 1, scale: 1.0, duration: 0.8, ease: "power3.out" }, 7.05);
-      
+
       // Floating animation
       const floatTween = gsap.to(finalPhotoRef.current, {
         y: -10,
@@ -395,12 +395,12 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
         repeat: -1,
         ease: "sine.inOut"
       }, 7.45);
-      
+
       floatTweenRef.current = floatTween;
 
       // Down arrow fade in and gentle pulse
       tl.to(downArrowRef.current, { opacity: 0.9, y: 0, duration: 0.8, ease: "power2.out" }, 7.05);
-      
+
       const arrowPulse = gsap.to(downArrowRef.current, {
         y: 8,
         opacity: 0.5,
@@ -420,7 +420,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
           // Timeout 4s: Fade in transition hint card softly
           hintTimeoutRef.current = setTimeout(() => {
             if (userInteractedRef.current) return;
-            
+
             gsap.killTweensOf(scrollHintRef.current);
             gsap.to(scrollHintRef.current, {
               opacity: 1,
@@ -428,7 +428,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
               duration: 0.65,
               ease: "power2.out"
             });
-            
+
             // Fade out the down arrow indicator
             if (arrowPulse) arrowPulse.kill();
             gsap.killTweensOf(downArrowRef.current);
@@ -448,7 +448,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
             if (arrowPulse) arrowPulse.kill();
             gsap.killTweensOf(downArrowRef.current);
             gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.35, ease: "power2.in" });
-            
+
             gsap.killTweensOf(scrollHintRef.current);
             gsap.to(scrollHintRef.current, { opacity: 0, y: -10, duration: 0.35, ease: "power2.in" });
 
@@ -465,12 +465,12 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
               const hearts = Array.from(particlesRef.current.children)
                 .filter(el => el.dataset.type === "heart")
                 .slice(0, 15);
-              
+
               hearts.forEach((el) => {
                 const startX = gsap.utils.random(-window.innerWidth * 0.45, window.innerWidth * 0.45);
                 const startY = window.innerHeight * 0.5 + 50;
                 const targetY = -window.innerHeight * 0.5 - 50;
-                
+
                 gsap.set(el, { x: startX, y: startY, scale: gsap.utils.random(1.2, 1.8), opacity: 0 });
                 gsap.to(el, { opacity: 0.85, duration: 0.35 });
                 gsap.to(el, {
@@ -508,18 +508,18 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
         const handleUserInteraction = () => {
           if (userInteractedRef.current) return;
           userInteractedRef.current = true;
-          
+
           if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
           if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-          
+
           // Instantly fade out arrow and hint
           gsap.killTweensOf(scrollHintRef.current);
           gsap.to(scrollHintRef.current, { opacity: 0, y: 15, duration: 0.35, ease: "power2.in" });
-          
+
           if (arrowPulse) arrowPulse.kill();
           gsap.killTweensOf(downArrowRef.current);
           gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.3, ease: "power2.in" });
-          
+
           // Proceed with native user scroll, clear hero overlay
           onExplode();
           setTimeout(() => {
@@ -657,7 +657,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       {!isExplosionFinished && isExploding && (
         <>
           {/* Phase 5: Solid White Flash */}
-          <div 
+          <div
             ref={whiteFlashRef}
             className="fixed inset-0 z-[200] pointer-events-none opacity-0 bg-white"
             style={{ display: "none" }}
@@ -671,7 +671,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
           />
 
           {/* Phase 3: Radial Light Rays */}
-          <div 
+          <div
             ref={radialRaysRef}
             className="absolute z-[98] w-[500px] h-[500px] max-w-[90vw] max-h-[90vw] pointer-events-none opacity-0 scale-50"
             style={{ willChange: "transform, opacity" }}
@@ -742,12 +742,12 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
                 {i % 3 === 0 ? "💖" : i % 3 === 1 ? "💝" : "❤️"}
               </span>
             ))}
-            
+
             {/* Sparkles (60) */}
             {[...Array(60)].map((_, i) => (
-              <div 
-                key={`s-${i}`} 
-                data-type="sparkle" 
+              <div
+                key={`s-${i}`}
+                data-type="sparkle"
                 className="absolute w-3 h-3 bg-amber-300 rounded-full shadow-[0_0_12px_#fde047] opacity-0"
                 style={{ willChange: "transform, opacity" }}
               />
@@ -755,9 +755,9 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
             {/* Petals (40) */}
             {[...Array(40)].map((_, i) => (
-              <div 
-                key={`p-${i}`} 
-                data-type="petal" 
+              <div
+                key={`p-${i}`}
+                data-type="petal"
                 className="absolute w-5 h-5 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full rounded-tr-none opacity-0"
                 style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)', willChange: "transform, opacity" }}
               />
@@ -765,18 +765,18 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
           </div>
 
           {/* Phase 8: Final Birthday Reveal */}
-          <div 
-            ref={finalRevealRef} 
+          <div
+            ref={finalRevealRef}
             className="absolute inset-0 z-[150] flex flex-col items-center justify-center pointer-events-none opacity-0 scale-95"
             style={{ display: "none" }}
           >
             <div className="glass-card max-w-sm w-[85vw] p-6 md:p-8 flex flex-col items-center gap-5 border-2 border-pink-400/30 shadow-[0_0_50px_rgba(244,63,94,0.25)] select-none">
               <h1 className="text-2xl md:text-3xl font-extrabold tracking-widest text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-amber-200 to-rose-300 drop-shadow-[0_2px_10px_rgba(244,63,94,0.4)] uppercase">
-                Happy Birthday, Uva! 💖
+                Happy Birthday, Yuvashre! 💖
               </h1>
-              
-              <div 
-                ref={finalPhotoRef} 
+
+              <div
+                ref={finalPhotoRef}
                 className="relative w-44 h-56 md:w-48 md:h-64 rounded-lg overflow-hidden border-[6px] border-white shadow-[0_15px_30px_rgba(0,0,0,0.5)] rotate-3"
               >
                 <Image
@@ -788,15 +788,15 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
               </div>
-              
+
               <p className="text-zinc-200 text-center font-serif italic text-xs md:text-sm leading-relaxed max-w-[280px]">
                 "You make every single moment brighter. Wishing you a year as beautiful and special as you are." ✨
               </p>
             </div>
 
             {/* Subtle Down Arrow Cue for Scroll */}
-            <div 
-              ref={downArrowRef} 
+            <div
+              ref={downArrowRef}
               className="absolute bottom-6 flex flex-col items-center gap-1.5 text-pink-300 opacity-0 select-none pointer-events-none"
               style={{ transform: "translate3d(0, 15px, 0)", willChange: "transform, opacity" }}
             >
@@ -809,7 +809,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
             </div>
 
             {/* Transition Hint Card */}
-            <div 
+            <div
               ref={scrollHintRef}
               className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[155] px-5 py-2.5 rounded-full bg-pink-950/60 border border-pink-500/30 backdrop-blur-md shadow-[0_0_30px_rgba(244,63,94,0.3)] pointer-events-none opacity-0 select-none flex items-center justify-center text-xs text-pink-200 gap-2 tracking-widest font-semibold uppercase animate-pulse"
               style={{ transform: "translate3d(0, 15px, 0)", willChange: "transform, opacity" }}
