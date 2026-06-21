@@ -68,18 +68,30 @@ const Timeline = React.memo(function Timeline() {
     if (!container || !line) return;
 
     let ctx = gsap.context(() => {
-      // Eagerly animate timeline vertical line drawing when section becomes visible
+      // 1. Eagerly animate the first 15% of the timeline line when it mounts
       gsap.fromTo(
         line,
         { scaleY: 0 },
         {
+          scaleY: 0.15,
+          ease: "power2.out",
+          duration: 0.8,
+          delay: 0.4, // Wait for hero to collapse
+        }
+      );
+
+      // 2. Attach a ScrollTrigger to draw the rest of the line from 0.15 to 1.0
+      gsap.fromTo(
+        line,
+        { scaleY: 0.15 },
+        {
           scaleY: 1,
-          ease: "power3.out",
-          duration: 1.5,
+          ease: "none",
           scrollTrigger: {
             trigger: containerRef.current,
-            start: "top 95%", // Trigger immediately when it enters the viewport
-            toggleActions: "play none none reverse",
+            start: "top 25%", // Kicks in once the user actually starts scrolling past the top
+            end: "bottom 75%",
+            scrub: true,
           },
         }
       );
@@ -89,35 +101,39 @@ const Timeline = React.memo(function Timeline() {
       cards.forEach((card, idx) => {
         const isLeft = idx % 2 === 0;
         
-        // Eagerly animate the first card without waiting for a tight scroll threshold
-        const triggerOptions = idx === 0 
-          ? {
-              trigger: containerRef.current,
-              start: "top 95%", // Triggers immediately with the line
-              toggleActions: "play none none reverse",
+        if (idx === 0) {
+          // Eagerly animate the first card so it's visible without scrolling
+          gsap.fromTo(
+            card,
+            { opacity: 0, x: isLeft ? -80 : 80, scale: 0.9 },
+            {
+              opacity: 1,
+              x: 0,
+              scale: 1,
+              duration: 1.0,
+              delay: 0.6, // Fire right after the eager line draw starts
+              ease: "power3.out",
             }
-          : {
-              trigger: card,
-              start: "top 85%",
-              toggleActions: "play none none reverse",
-            };
-
-        gsap.fromTo(
-          card,
-          {
-            opacity: 0,
-            x: isLeft ? -80 : 80,
-            scale: 0.9,
-          },
-          {
-            opacity: 1,
-            x: 0,
-            scale: 1,
-            duration: 1.0,
-            ease: "power3.out",
-            scrollTrigger: triggerOptions,
-          }
-        );
+          );
+        } else {
+          // Normal scroll-triggered animation for the rest of the cards
+          gsap.fromTo(
+            card,
+            { opacity: 0, x: isLeft ? -80 : 80, scale: 0.9 },
+            {
+              opacity: 1,
+              x: 0,
+              scale: 1,
+              duration: 1.0,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: card,
+                start: "top 85%",
+                toggleActions: "play none none reverse",
+              },
+            }
+          );
+        }
       });
     }, containerRef);
 
