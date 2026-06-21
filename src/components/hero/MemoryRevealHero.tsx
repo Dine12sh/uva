@@ -9,6 +9,7 @@ import { PolaroidScratchCard } from "./PolaroidScratchCard";
 
 interface MemoryRevealHeroProps {
   onExplode: () => void;
+  onHeroComplete?: () => void;
 }
 
 const MEMORIES = [
@@ -19,7 +20,7 @@ const MEMORIES = [
   { id: 5, url: "/media/IMG_20260614_180315.jpg", caption: "Forever & Always " },
 ];
 
-export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode }: MemoryRevealHeroProps) {
+export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode, onHeroComplete }: MemoryRevealHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isExploding, setIsExploding] = useState(false);
   const [isExplosionFinished, setIsExplosionFinished] = useState(false);
@@ -59,6 +60,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       const tl = gsap.timeline({
         onComplete: () => {
           setIsExplosionFinished(true);
+          onHeroComplete?.();
         },
       });
 

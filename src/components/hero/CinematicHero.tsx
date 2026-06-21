@@ -7,6 +7,7 @@ import { MemoryRevealHero } from "./MemoryRevealHero";
 
 export function CinematicHero() {
   const [introComplete, setIntroComplete] = useState(false);
+  const [heroHidden, setHeroHidden] = useState(false);
 
   const handleExplosion = () => {
     // Scroll down smoothly to the next section immediately
@@ -21,8 +22,10 @@ export function CinematicHero() {
     }, 100); // Only a 100ms micro-delay to allow DOM to register the Timeline mount
   };
 
+  if (heroHidden) return null;
+
   return (
-    <section className="relative w-full h-screen bg-[#050505] overflow-hidden">
+    <section className={`relative w-full ${heroHidden ? 'h-0 hidden' : 'h-screen'} bg-[#050505] overflow-hidden`}>
       {!introComplete && (
         <NetflixIntro onComplete={() => setIntroComplete(true)} />
       )}
@@ -37,7 +40,7 @@ export function CinematicHero() {
       >
         <HeartParticleEngine />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.15),transparent_50%)] pointer-events-none" />
-        <MemoryRevealHero onExplode={handleExplosion} />
+        <MemoryRevealHero onExplode={handleExplosion} onHeroComplete={() => setHeroHidden(true)} />
       </div>
     </section>
   );

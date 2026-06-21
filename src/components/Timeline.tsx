@@ -68,18 +68,18 @@ const Timeline = React.memo(function Timeline() {
     if (!container || !line) return;
 
     let ctx = gsap.context(() => {
-      // Animate timeline vertical line drawing
-      const lineTrigger = gsap.fromTo(
+      // Eagerly animate timeline vertical line drawing when section becomes visible
+      gsap.fromTo(
         line,
         { scaleY: 0 },
         {
           scaleY: 1,
-          ease: "none",
+          ease: "power3.out",
+          duration: 1.5,
           scrollTrigger: {
             trigger: containerRef.current,
-            start: "top 25%",
-            end: "bottom 75%",
-            scrub: true,
+            start: "top 95%", // Trigger immediately when it enters the viewport
+            toggleActions: "play none none reverse",
           },
         }
       );
@@ -93,7 +93,7 @@ const Timeline = React.memo(function Timeline() {
         const triggerOptions = idx === 0 
           ? {
               trigger: containerRef.current,
-              start: "top 80%", // Triggers much earlier when the section itself comes into view
+              start: "top 95%", // Triggers immediately with the line
               toggleActions: "play none none reverse",
             }
           : {

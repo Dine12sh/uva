@@ -459,7 +459,10 @@ export default function CelebrationEngine() {
   return (
     <canvas
       ref={canvasRef}
-      className="pointer-events-none fixed inset-0 z-50 h-full w-full"
+      className="fixed inset-0 pointer-events-none z-[5]"
+      style={{
+        display: fireworkTriggerCount || balloonTriggerCount || heartTriggerCount ? "block" : "none"
+      }}
     />
   );
 }
