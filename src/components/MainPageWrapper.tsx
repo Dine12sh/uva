@@ -54,8 +54,6 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
       wheelMultiplier: 1.0,
     });
 
-    (window as any).lenis = lenis;
-
     const raf = (time: number) => {
       lenis.raf(time);
       requestAnimationFrame(raf);
@@ -65,7 +63,6 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
 
     return () => {
       lenis.destroy();
-      (window as any).lenis = null;
     };
   }, [showMain]);
 

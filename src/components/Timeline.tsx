@@ -88,7 +88,7 @@ const Timeline = React.memo(function Timeline() {
           scaleY: 1,
           ease: "none",
           scrollTrigger: {
-            trigger: container,
+            trigger: containerRef.current,
             start: "top 25%", // Kicks in once the user actually starts scrolling past the top
             end: "bottom 75%",
             scrub: true,
@@ -96,41 +96,45 @@ const Timeline = React.memo(function Timeline() {
         }
       );
 
-      // 3. Section Reveal: Fade in and slide up the timeline container
-      gsap.fromTo(container,
-        { opacity: 0, y: 50 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 1.2,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: container,
-            start: "top 80%",
-            once: true,
-          }
-        }
-      );
-
-      // 4. Stagger reveal of timeline cards using transform + opacity
+      // Animate cards on scroll reveal
       const cards = container.querySelectorAll(".timeline-card");
-      gsap.fromTo(
-        cards,
-        { opacity: 0, y: 40, scale: 0.94 },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.8,
-          stagger: 0.15,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: container,
-            start: "top 70%",
-            once: true,
-          }
+      cards.forEach((card, idx) => {
+        const isLeft = idx % 2 === 0;
+        
+        if (idx === 0) {
+          // Eagerly animate the first card so it's visible without scrolling
+          gsap.fromTo(
+            card,
+            { opacity: 0, x: isLeft ? -80 : 80, scale: 0.9 },
+            {
+              opacity: 1,
+              x: 0,
+              scale: 1,
+              duration: 1.0,
+              delay: 0.6, // Fire right after the eager line draw starts
+              ease: "power3.out",
+            }
+          );
+        } else {
+          // Normal scroll-triggered animation for the rest of the cards
+          gsap.fromTo(
+            card,
+            { opacity: 0, x: isLeft ? -80 : 80, scale: 0.9 },
+            {
+              opacity: 1,
+              x: 0,
+              scale: 1,
+              duration: 1.0,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: card,
+                start: "top 85%",
+                toggleActions: "play none none reverse",
+              },
+            }
+          );
         }
-      );
+      });
     }, containerRef);
 
     return () => ctx.revert();

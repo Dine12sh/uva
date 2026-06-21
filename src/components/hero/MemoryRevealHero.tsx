@@ -39,7 +39,6 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
   const finalRevealRef = useRef<HTMLDivElement>(null);
   const finalPhotoRef = useRef<HTMLDivElement>(null);
   const ambientBloomRef = useRef<HTMLDivElement>(null);
-  const tapToBeginRef = useRef<HTMLDivElement>(null);
 
   const { triggerBalloons, triggerFireworks, triggerHearts, triggerConfetti, setExploding } = useCelebrationStore();
 
@@ -56,94 +55,6 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       setExploding(true);
     }
   };
-
-  // Cinematic Auto-Scroll Timer & Interaction Listeners
-  useEffect(() => {
-    // Only run if we are on the landing screen and it hasn't auto-scrolled yet in this session
-    if (currentIndex !== -1 || sessionStorage.getItem("hasAutoScrolled") === "true") {
-      return;
-    }
-
-    let pulseTimeout: NodeJS.Timeout;
-    let scrollTimeout: NodeJS.Timeout;
-    let cancelled = false;
-
-    const cancelAutoScroll = () => {
-      if (cancelled) return;
-      cancelled = true;
-      clearTimeout(pulseTimeout);
-      clearTimeout(scrollTimeout);
-      removeListeners();
-    };
-
-    const removeListeners = () => {
-      window.removeEventListener("wheel", cancelAutoScroll);
-      window.removeEventListener("scroll", cancelAutoScroll);
-      window.removeEventListener("touchmove", cancelAutoScroll);
-      window.removeEventListener("pointerdown", cancelAutoScroll);
-      window.removeEventListener("mousedown", cancelAutoScroll);
-      window.removeEventListener("keydown", cancelAutoScroll);
-      window.removeEventListener("touchstart", cancelAutoScroll);
-    };
-
-    // Bind event listeners to detect user interaction
-    window.addEventListener("wheel", cancelAutoScroll, { passive: true });
-    window.addEventListener("scroll", cancelAutoScroll, { passive: true });
-    window.addEventListener("touchmove", cancelAutoScroll, { passive: true });
-    window.addEventListener("pointerdown", cancelAutoScroll, { passive: true });
-    window.addEventListener("mousedown", cancelAutoScroll, { passive: true });
-    window.addEventListener("keydown", cancelAutoScroll, { passive: true });
-    window.addEventListener("touchstart", cancelAutoScroll, { passive: true });
-
-    // 1. Heart Pulse & Glow Animation at 4.0s (1s before scroll)
-    pulseTimeout = setTimeout(() => {
-      if (cancelled) return;
-
-      if (tapToBeginRef.current) {
-        gsap.to(tapToBeginRef.current, {
-          scale: 1.08,
-          filter: "drop-shadow(0 0 35px rgba(244,63,94,0.85))",
-          duration: 0.5,
-          yoyo: true,
-          repeat: 1,
-          ease: "power2.inOut",
-        });
-      }
-    }, 4000);
-
-    // 2. Smooth auto scroll to centered timeline offset at 5.0s
-    scrollTimeout = setTimeout(() => {
-      if (cancelled) return;
-      
-      sessionStorage.setItem("hasAutoScrolled", "true");
-      removeListeners();
-
-      const timelineSection = document.getElementById("friendship-timeline");
-      if (timelineSection) {
-        const isMobile = window.innerWidth < 768;
-        const offset = isMobile ? 180 : 250;
-        const targetPosition = timelineSection.offsetTop + offset;
-
-        if ((window as any).lenis) {
-          (window as any).lenis.scrollTo(targetPosition, {
-            duration: 2.2,
-            easing: (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2 // cubic in-out (power3)
-          });
-        } else {
-          window.scrollTo({
-            top: targetPosition,
-            behavior: "smooth"
-          });
-        }
-      }
-    }, 5000);
-
-    return () => {
-      clearTimeout(pulseTimeout);
-      clearTimeout(scrollTimeout);
-      removeListeners();
-    };
-  }, [currentIndex]);
 
   useEffect(() => {
     if (!isExploding) return;
@@ -529,7 +440,6 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
         <AnimatePresence mode="wait">
           {currentIndex === -1 ? (
             <motion.div
-              ref={tapToBeginRef}
               key="tap-to-begin"
               initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
               animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
