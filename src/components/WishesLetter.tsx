@@ -8,6 +8,7 @@ interface WishesLetterProps {
 }
 
 const defaultMessage = `Dear Friend,
+Happiest Birthday to the Beautiful Soul Born Today!
 
 Every memory we've shared has made life brighter and more meaningful.
 
@@ -23,7 +24,7 @@ export default function WishesLetter({ customMessage }: WishesLetterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [typedText, setTypedText] = useState("");
   const [typingDone, setTypingDone] = useState(false);
-  
+
   const textToType = customMessage || defaultMessage;
   const indexRef = useRef(0);
 
@@ -86,15 +87,15 @@ export default function WishesLetter({ customMessage }: WishesLetterProps) {
           >
             {/* Envelope Triangles Fold Style */}
             <div className="absolute inset-0 border-[2px] border-pink-400/10 rounded-xl" />
-            
+
             {/* Left/Right flap overlays */}
             <div className="absolute inset-0 bg-linear-to-tr from-rose-200/50 via-transparent to-rose-100/50 pointer-events-none rounded-xl" />
-            
+
             <div className="flex flex-col items-center gap-4 text-center z-10">
               <span className="text-zinc-600 font-serif text-sm tracking-widest uppercase">
                 A Handwritten Message For You
               </span>
-              
+
               {/* Wax Seal Button */}
               <motion.div
                 whileHover={{ scale: 1.1, rotate: 5 }}
@@ -105,7 +106,7 @@ export default function WishesLetter({ customMessage }: WishesLetterProps) {
                 <div className="w-12 h-12 rounded-full border border-amber-400/20 flex items-center justify-center font-bold text-amber-100 text-lg">
                   ❤
                 </div>
-                
+
                 {/* Glow ring around seal */}
                 <div className="absolute inset-0 rounded-full border border-amber-400/30 animate-pulse" />
               </motion.div>
@@ -127,7 +128,7 @@ export default function WishesLetter({ customMessage }: WishesLetterProps) {
           >
             {/* Decorative Letter Borders */}
             <div className="absolute inset-4 border border-[#E7DECB] pointer-events-none rounded-md" />
-            
+
             {/* Wax seal watermark in corner */}
             <div className="absolute top-6 right-6 opacity-30 w-10 h-10 rounded-full bg-amber-700/40 flex items-center justify-center font-bold text-amber-200 text-xs">
               ❤
@@ -148,7 +149,7 @@ export default function WishesLetter({ customMessage }: WishesLetterProps) {
                 Close Letter
               </button>
             </div>
-            
+
             {/* Subtle vintage shadows */}
             <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
           </motion.div>

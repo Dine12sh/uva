@@ -44,6 +44,8 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
     setShowMain(true);
   };
 
+  const [showContent, setShowContent] = useState(false);
+
   // Initialize Lenis Smooth Scroll only when main content is visible
   useEffect(() => {
     if (!showMain) return;
@@ -109,39 +111,43 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
             {/* Front sections z-indexed above background */}
             <div className="relative z-10">
               {/* 3. Hero Section (Netflix Intro -> Cinematic) */}
-              <HeroSection />
+              <HeroSection onRevealComplete={() => setShowContent(true)} />
 
-              {/* 4. Journey Timeline */}
-              <Timeline />
+              {showContent && (
+                <>
+                  {/* 4. Journey Timeline */}
+                  <Timeline />
 
-              {/* 5. Photo Masonry Gallery */}
-              <MemoryGallery memories={memories} />
+                  {/* 5. Photo Masonry Gallery */}
+                  <MemoryGallery memories={memories} />
 
-              {/* 6. Video memories Slider */}
-              <VideoSection memories={memories} />
+                  {/* 6. Video memories Slider */}
+                  <VideoSection memories={memories} />
 
-              {/* 7. Interactive 3D Birthday Cake Section */}
-              <section id="interactive-cake" className="py-24 px-6 md:px-16 bg-black/70">
-                <div className="max-w-4xl mx-auto">
-                  <InteractiveCake />
-                </div>
-              </section>
+                  {/* 7. Interactive 3D Birthday Cake Section */}
+                  <section id="interactive-cake" className="py-24 px-6 md:px-16 bg-black/70">
+                    <div className="max-w-4xl mx-auto">
+                      <InteractiveCake />
+                    </div>
+                  </section>
 
-              {/* 8. Balloon Pop Mini Game */}
-              <BalloonGame />
+                  {/* 8. Balloon Pop Mini Game */}
+                  <BalloonGame />
 
-              {/* 9. Sealed handwritten letter wishes */}
-              <section id="wishes-letter" className="py-24 px-6 md:px-16 bg-black/50">
-                <div className="max-w-3xl mx-auto">
-                  <WishesLetter />
-                </div>
-              </section>
+                  {/* 9. Sealed handwritten letter wishes */}
+                  <section id="wishes-letter" className="py-24 px-6 md:px-16 bg-black/50">
+                    <div className="max-w-3xl mx-auto">
+                      <WishesLetter />
+                    </div>
+                  </section>
 
-              {/* 10. Final Cinematic Surprise Ending */}
-              <FinalSurprise />
+                  {/* 10. Final Cinematic Surprise Ending */}
+                  <FinalSurprise />
 
-              {/* 11. Gift Reveal */}
-              <GiftReveal />
+                  {/* 11. Gift Reveal */}
+                  <GiftReveal />
+                </>
+              )}
             </div>
           </motion.div>
         )}

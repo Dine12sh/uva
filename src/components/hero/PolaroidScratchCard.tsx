@@ -13,6 +13,7 @@ interface PolaroidScratchCardProps {
   disabled?: boolean;
   isPriority?: boolean;
   onNext: () => void;
+  buttonText?: string;
 }
 
 export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
@@ -20,21 +21,23 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
   url,
   caption,
   isFinal,
-  disabled,
+  disabled: parentDisabled,
   isPriority,
   onNext,
+  buttonText,
 }: PolaroidScratchCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const clickedRef = useRef(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const glowBurstRef = useRef<HTMLSpanElement>(null);
   const rippleRef = useRef<HTMLSpanElement>(null);
+
   const [isDrawing, setIsDrawing] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
   const [showTypewriter, setShowTypewriter] = useState(false);
   const [typedText, setTypedText] = useState("");
   const [showNext, setShowNext] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Typewriter effect logic
   useEffect(() => {
@@ -42,6 +45,12 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
 
     const fullText = caption;
     let currentIdx = 0;
+    let buttonTimeout: NodeJS.Timeout;
+
+    // Fade in button earlier (300ms after typewriter starts)
+    buttonTimeout = setTimeout(() => {
+      setShowNext(true);
+    }, 300);
     
     const interval = setInterval(() => {
       setTypedText(fullText.substring(0, currentIdx));
@@ -49,11 +58,13 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
       
       if (currentIdx > fullText.length) {
         clearInterval(interval);
-        setTimeout(() => setShowNext(true), 500);
       }
     }, 50);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(buttonTimeout);
+    };
   }, [showTypewriter, caption]);
 
   // Initialize Canvas
@@ -100,6 +111,21 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
 
   }, [isRevealed]);
 
+  // Clean up GSAP animations on unmount
+  useEffect(() => {
+    return () => {
+      if (buttonRef.current) {
+        gsap.killTweensOf(buttonRef.current);
+      }
+      if (glowBurstRef.current) {
+        gsap.killTweensOf(glowBurstRef.current);
+      }
+      if (rippleRef.current) {
+        gsap.killTweensOf(rippleRef.current);
+      }
+    };
+  }, []);
+
   const checkCompletion = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -119,10 +145,11 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
     const totalPixels = pixels.length / 4;
     const percentage = (transparentPixels / totalPixels) * 100;
 
-    if (percentage > 65) {
+    // Trigger reveal at 50% completion
+    if (percentage > 50) {
       setIsRevealed(true);
-      // Trigger typewriter slightly after the Polaroid pop animation
-      setTimeout(() => setShowTypewriter(true), 1200);
+      // Trigger typewriter slightly after the Polaroid pop animation starts
+      setTimeout(() => setShowTypewriter(true), 600);
     }
   }, []);
 
@@ -164,6 +191,63 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
     }
   };
 
+  // Central click handler with navigation lock, animations, and haptics
+  const handleNextClick = useCallback((e?: React.MouseEvent | React.KeyboardEvent) => {
+    if (parentDisabled || isNavigating) return;
+    setIsNavigating(true);
+
+    // Haptic feedback
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(10);
+      } catch (err) {}
+    }
+
+    const btn = buttonRef.current;
+    if (btn) {
+      gsap.killTweensOf(btn);
+      gsap.fromTo(btn, { scale: 0.95 }, { scale: 1, duration: 0.2, ease: "power2.out" });
+
+      if (glowBurstRef.current) {
+        gsap.killTweensOf(glowBurstRef.current);
+        gsap.fromTo(glowBurstRef.current,
+          { scale: 0.8, opacity: 0.8 },
+          { scale: 2.5, opacity: 0, duration: 0.45, ease: "power2.out" }
+        );
+      }
+
+      if (rippleRef.current) {
+        gsap.killTweensOf(rippleRef.current);
+        const rect = btn.getBoundingClientRect();
+        // Fallback to center coordinates if not a mouse event
+        const clientX = e && 'clientX' in e ? e.clientX : rect.left + rect.width / 2;
+        const clientY = e && 'clientY' in e ? e.clientY : rect.top + rect.height / 2;
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        gsap.set(rippleRef.current, { x, y, scale: 0, opacity: 0.6 });
+        gsap.to(rippleRef.current, {
+          scale: 3,
+          opacity: 0,
+          duration: 0.5,
+          ease: "power3.out"
+        });
+      }
+    }
+
+    onNext();
+  }, [parentDisabled, isNavigating, onNext]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleNextClick(e);
+    }
+  };
+
+  // Determine button text dynamically
+  const defaultText = isFinal ? "💖 Open My Heart" : "Next Memory →";
+  const displayedText = buttonText || defaultText;
+
   return (
     <div className="relative flex flex-col items-center">
       {/* Main Card Container */}
@@ -187,19 +271,18 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
           animate={
             isRevealed
               ? {
-                  scale: [0.4, 1.15, 1],
-                  rotate: [-18, 5, 0],
-                  filter: ["blur(10px)", "blur(0px)", "blur(0px)"],
+                  scale: 1,
+                  rotate: 0,
+                  filter: "blur(0px)",
                   opacity: 1
                 }
               : { scale: 1, rotate: 0, filter: "blur(0px)", opacity: 1 }
           }
           transition={{
-            duration: 1.2,
-            times: [0, 0.6, 1],
+            duration: 0.8,
             type: "spring",
-            stiffness: 120,
-            damping: 12,
+            stiffness: 100,
+            damping: 15,
           }}
           className={`absolute inset-0 bg-white shadow-[0_30px_60px_rgba(0,0,0,0.4),0_0_20px_rgba(255,255,255,0.1)] flex flex-col items-center p-4 pb-16 origin-center ${isRevealed ? "z-30" : "z-10"}`}
         >
@@ -216,11 +299,10 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
                 e.currentTarget.style.display = 'none';
               }}
             />
-            {/* Glossy reflection on polaroid photo */}
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none" />
           </div>
 
-          {/* Typewriter Text area on the white bottom border of Polaroid */}
+          {/* Typewriter Text area */}
           <div className="absolute bottom-2 left-0 w-full px-6 flex flex-col items-center justify-center h-14">
             <div className="font-cursive text-zinc-800 text-lg md:text-xl text-center whitespace-pre-wrap leading-tight">
               {typedText}
@@ -249,70 +331,23 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
       <AnimatePresence>
         {showNext && (
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ type: "spring", stiffness: 120, damping: 12 }}
+            initial={{ opacity: 0, y: 15, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 150, damping: 15 }}
             className="absolute -bottom-16 md:-bottom-24 z-40 scale-90 md:scale-100"
           >
-            <motion.button
+            <button
               ref={buttonRef}
-              disabled={disabled}
-              onPointerDown={(e: React.PointerEvent<HTMLButtonElement>) => {
-                if (disabled || clickedRef.current) return;
-                clickedRef.current = true;
-                
-                // Tiny haptic vibration on mobile
-                if (typeof navigator !== "undefined" && navigator.vibrate) {
-                  try {
-                    navigator.vibrate(10);
-                  } catch (err) {
-                    // Ignore haptic failures (e.g. security permissions)
-                  }
-                }
-                
-                // GSAP click response animation
-                gsap.killTweensOf(e.currentTarget);
-                gsap.to(e.currentTarget, {
-                  scale: 0.92,
-                  duration: 0.08,
-                  ease: "power2.out"
-                });
-                
-                if (glowBurstRef.current) {
-                  gsap.fromTo(glowBurstRef.current,
-                    { scale: 0.8, opacity: 0.8 },
-                    { scale: 2.5, opacity: 0, duration: 0.45, ease: "power2.out" }
-                  );
-                }
-                
-                if (rippleRef.current) {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = e.clientX - rect.left;
-                  const y = e.clientY - rect.top;
-                  gsap.set(rippleRef.current, { x, y, scale: 0, opacity: 0.6 });
-                  gsap.to(rippleRef.current, {
-                    scale: 3,
-                    opacity: 0,
-                    duration: 0.5,
-                    ease: "power3.out"
-                  });
-                }
-                
-                // Immediate 0ms trigger
-                onNext();
-              }}
-              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                // Prevent duplicate click execution since we handle on pointerdown
-                e.preventDefault();
-                e.stopPropagation();
-              }}
+              disabled={parentDisabled || isNavigating}
+              onClick={(e) => handleNextClick(e)}
+              onKeyDown={handleKeyDown}
               aria-label={isFinal ? "Open My Heart" : "Next Memory"}
-              className={`relative overflow-hidden px-8 py-4 rounded-full font-bold text-lg text-white shadow-2xl transition-all duration-300 ${
-                disabled ? "opacity-50 cursor-not-allowed" : "hover:scale-105"
+              className={`relative overflow-hidden px-8 py-4 rounded-full font-bold text-lg text-white shadow-2xl transition-all duration-300 pointer-events-auto ${
+                (parentDisabled || isNavigating) ? "opacity-50 cursor-not-allowed" : "hover:scale-105 active:scale-95"
               } ${
                 isFinal
-                  ? "bg-gradient-to-r from-rose-500 to-pink-600 shadow-[0_0_40px_rgba(244,63,94,0.8)]"
+                  ? "bg-gradient-to-r from-rose-500 to-pink-600 shadow-[0_0_40px_rgba(244,63,94,0.8)] hover:shadow-[0_0_50px_rgba(244,63,94,0.95)]"
                   : "bg-white/10 border border-white/20 backdrop-blur-md hover:bg-white/20 hover:border-pink-300 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
               }`}
               style={{ transform: "scale(1)", transformOrigin: "center" }}
@@ -331,10 +366,16 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
                 style={{ left: 0, top: 0 }}
               />
 
-              <span className="relative z-10">
-                {isFinal ? "💖 Open My Heart" : "Next Memory ➔"}
+              <span className="relative z-10 flex items-center gap-2">
+                {isNavigating && (
+                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                )}
+                {displayedText}
               </span>
-            </motion.button>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

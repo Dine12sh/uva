@@ -11,17 +11,38 @@ import { PolaroidScratchCard } from "./PolaroidScratchCard";
 interface MemoryRevealHeroProps {
   onExplode: () => void;
   onHeroComplete?: () => void;
+  onRevealComplete?: () => void;
 }
 
 const MEMORIES = [
-  { id: 1, url: "/media/IMG-20251207-WA0025.jpg", caption: "Our first trip " },
-  { id: 2, url: "/media/IMG_20260613_223016.jpg", caption: "Movie nights " },
-  { id: 3, url: "/media/IMG_20260614_144734~2.jpg", caption: "Dinner dates " },
-  { id: 4, url: "/media/IMG_20260614_180206.jpg", caption: "That random Tuesday " },
-  { id: 5, url: "/media/IMG_20260614_180315.jpg", caption: "Forever & Always " },
+  {
+    id: 1,
+    url: "/media/IMG-20251207-WA0025.jpg",
+    caption: "Effortlessly beautiful ✨",
+  },
+  {
+    id: 2,
+    url: "/media/IMG_20260613_223016.jpg",
+    caption: "Silent vibes, loud presence 🤍",
+  },
+  {
+    id: 3,
+    url: "/media/IMG_20260614_144734~2.jpg",
+    caption: "Just me, my mood, my moment 🌙",
+  },
+  {
+    id: 4,
+    url: "/media/IMG_20260614_180206.jpg",
+    caption: "Simple look, strong aura 🔥",
+  },
+  {
+    id: 5,
+    url: "/media/IMG_20260614_180315.jpg",
+    caption: "No words needed… just vibes 💫",
+  },
 ];
 
-export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode, onHeroComplete }: MemoryRevealHeroProps) {
+export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode, onHeroComplete, onRevealComplete }: MemoryRevealHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isExploding, setIsExploding] = useState(false);
   const [isExplosionFinished, setIsExplosionFinished] = useState(false);
@@ -71,14 +92,23 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
   useEffect(() => {
     if (!isExploding) return;
 
+    // Lock scrolling on body when explosion animation begins
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    if ((window as any).lenis) {
+      try {
+        (window as any).lenis.stop();
+      } catch (e) {
+        console.error("Lenis stop failed:", e);
+      }
+    }
+
     let ctx = gsap.context(() => {
       const isMobile = window.innerWidth < 768;
       const tl = gsap.timeline();
 
       // Prepare initial states of all elements to prevent FOUC (flash of unstyled content)
-      gsap.set([heartRef.current, radialRaysRef.current, lightRingRef.current, shockwaveRef.current, memoryBurstRef.current, finalRevealRef.current], {
-        transformOrigin: "center center"
-      });
+      gsap.set([heartRef.current, radialRaysRef.current, lightRingRef.current, shockwaveRef.current, memoryBurstRef.current, finalRevealRef.current], { transformOrigin: "center center" });
 
       // ==========================================
       // PHASE 1 — HEART AWAKENING (0.0s - 0.5s)
@@ -417,7 +447,11 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
         const startAutoScrollCountdown = () => {
           if (hasAutoScrolledRef.current || userInteractedRef.current) return;
 
-          // Timeout 4s: Fade in transition hint card softly
+          // Accessibility check: disable auto-scroll if user prefers reduced motion
+          const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          if (prefersReducedMotion) return;
+
+          // Timeout 0.4s: Fade in transition hint card softly
           hintTimeoutRef.current = setTimeout(() => {
             if (userInteractedRef.current) return;
 
@@ -433,81 +467,118 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
             if (arrowPulse) arrowPulse.kill();
             gsap.killTweensOf(downArrowRef.current);
             gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.5, ease: "power2.in" });
-          }, 4000);
+          }, 400);
 
-          // Timeout 5s: Smooth programmatic cinematic scroll
-          scrollTimeoutRef.current = setTimeout(() => {
+          // Timeout 1.2s: Smooth programmatic cinematic scroll (gives user 1.2s to enjoy)
+          scrollTimeoutRef.current = setTimeout(async () => {
             if (userInteractedRef.current) return;
-            isAutoScrollingRef.current = true;
-            hasAutoScrolledRef.current = true;
+            console.log("[DEBUG] Scroll timer fired. Triggering reveal complete to mount content...");
 
-            // Pause heavy floating animations during scroll for optimal 60 FPS
-            if (floatTweenRef.current) floatTweenRef.current.pause();
+            // Trigger parent wrapper to mount the timeline and other sections
+            onRevealComplete?.();
 
-            // Fade out the down arrow and hint label
-            if (arrowPulse) arrowPulse.kill();
-            gsap.killTweensOf(downArrowRef.current);
-            gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.35, ease: "power2.in" });
+            try {
+              const target = await waitForElement("friendship-timeline");
+              console.log("[DEBUG] Target verified. ID:", target.id, "offsetTop:", target.offsetTop);
+              console.log("[DEBUG] Lenis state:", (window as any).lenis ? "Ready" : "Not Found");
+              console.log("[DEBUG] Current scrollY:", window.scrollY);
 
-            gsap.killTweensOf(scrollHintRef.current);
-            gsap.to(scrollHintRef.current, { opacity: 0, y: -10, duration: 0.35, ease: "power2.in" });
+              isAutoScrollingRef.current = true;
+              hasAutoScrolledRef.current = true;
 
-            // Ambient bloom glow screen transition
-            if (ambientBloomRef.current) {
-              gsap.fromTo(ambientBloomRef.current,
-                { opacity: 0.18, scale: 1.0 },
-                { opacity: 0.85, scale: 1.8, duration: 0.9, yoyo: true, repeat: 1, ease: "sine.inOut" }
-              );
-            }
+              // Pause heavy floating animations during scroll for optimal 60 FPS
+              if (floatTweenRef.current) floatTweenRef.current.pause();
 
-            // Launch floating hearts up during scroll
-            if (particlesRef.current) {
-              const hearts = Array.from(particlesRef.current.children)
-                .filter(el => el.dataset.type === "heart")
-                .slice(0, 15);
+              // Fade out the down arrow and hint label
+              if (arrowPulse) arrowPulse.kill();
+              gsap.killTweensOf(downArrowRef.current);
+              gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.35, ease: "power2.in" });
 
-              hearts.forEach((el) => {
-                const startX = gsap.utils.random(-window.innerWidth * 0.45, window.innerWidth * 0.45);
-                const startY = window.innerHeight * 0.5 + 50;
-                const targetY = -window.innerHeight * 0.5 - 50;
+              gsap.killTweensOf(scrollHintRef.current);
+              gsap.to(scrollHintRef.current, { opacity: 0, y: -10, duration: 0.35, ease: "power2.in" });
 
-                gsap.set(el, { x: startX, y: startY, scale: gsap.utils.random(1.2, 1.8), opacity: 0 });
-                gsap.to(el, { opacity: 0.85, duration: 0.35 });
-                gsap.to(el, {
-                  y: targetY,
-                  x: startX + gsap.utils.random(-120, 120),
-                  rotation: gsap.utils.random(-180, 180),
-                  duration: 1.8,
-                  ease: "sine.out"
+              // Ambient bloom glow screen transition
+              if (ambientBloomRef.current) {
+                gsap.fromTo(ambientBloomRef.current,
+                  { opacity: 0.18, scale: 1.0 },
+                  { opacity: 0.85, scale: 1.8, duration: 0.9, yoyo: true, repeat: 1, ease: "sine.inOut" }
+                );
+              }
+
+              // Launch floating hearts up during scroll
+              if (particlesRef.current) {
+                const hearts = Array.from(particlesRef.current.children)
+                  .filter(el => el.dataset.type === "heart")
+                  .slice(0, 15);
+
+                hearts.forEach((el) => {
+                  const startX = gsap.utils.random(-window.innerWidth * 0.45, window.innerWidth * 0.45);
+                  const startY = window.innerHeight * 0.5 + 50;
+                  const targetY = -window.innerHeight * 0.5 - 50;
+
+                  gsap.set(el, { x: startX, y: startY, scale: gsap.utils.random(1.2, 1.8), opacity: 0 });
+                  gsap.to(el, { opacity: 0.85, duration: 0.35 });
+                  gsap.to(el, {
+                    y: targetY,
+                    x: startX + gsap.utils.random(-120, 120),
+                    rotation: gsap.utils.random(-180, 180),
+                    duration: 1.8,
+                    ease: "sine.out"
+                  });
+                  gsap.to(el, { opacity: 0, delay: 1.4, duration: 0.4 });
                 });
-                gsap.to(el, { opacity: 0, delay: 1.4, duration: 0.4 });
-              });
-            }
+              }
 
-            // Smooth programmatic cinematic scroll
-            if ((window as any).lenis) {
-              (window as any).lenis.scrollTo("#friendship-timeline", {
-                duration: 1.8,
-                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
-              });
-            } else {
-              document.getElementById("friendship-timeline")?.scrollIntoView({ behavior: "smooth" });
-            }
+              try {
+                console.log("[DEBUG] Commencing scroll now...");
+                
+                // Enable scroll right before scrolling starts
+                document.body.style.overflow = "";
+                document.documentElement.style.overflow = "";
+                if ((window as any).lenis) {
+                  try {
+                    (window as any).lenis.start();
+                  } catch (e) {}
+                }
 
-            // Complete explosion and unmount Hero after scroll finishes
-            setTimeout(() => {
-              setIsExplosionFinished(true);
-              onHeroComplete?.();
-            }, 1800);
+                // Smooth programmatic cinematic scroll
+                const targetEl = document.getElementById("friendship-timeline");
+                if ((window as any).lenis) {
+                  (window as any).lenis.scrollTo("#friendship-timeline", {
+                    duration: 1.8,
+                    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+                  });
+                } else {
+                  targetEl?.scrollIntoView({ behavior: "smooth" });
+                }
+
+                console.log("[DEBUG] Scroll triggered. Unmounting hero section overlay in 1.8s...");
+                // Complete explosion and unmount Hero after scroll finishes
+                setTimeout(() => {
+                  console.log("[DEBUG] Hero overlay unmounted successfully.");
+                  setIsExplosionFinished(true);
+                  onHeroComplete?.();
+                }, 1800);
+
+              } catch (err) {
+                console.error("[DEBUG] Auto-scroll failed:", err);
+              }
+
+            } catch (err) {
+              console.error("[DEBUG] Auto-scroll failed:", err);
+            }
 
             removeListeners();
             if (observerRef.current) observerRef.current.disconnect();
-          }, 5000);
+          }, 2500);
         };
 
         const handleUserInteraction = () => {
           if (userInteractedRef.current) return;
           userInteractedRef.current = true;
+
+          // Make sure timeline and other sections are mounted immediately
+          onRevealComplete?.();
 
           if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
           if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
@@ -570,13 +641,22 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
     }, containerRef);
 
-    return () => ctx.revert();
+    return () => {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      if ((window as any).lenis) {
+        try {
+          (window as any).lenis.start();
+        } catch (e) {}
+      }
+      ctx.revert();
+    };
   }, [isExploding, triggerConfetti, triggerFireworks, triggerHearts, triggerBalloons, onExplode, onHeroComplete]);
 
   const progressPercentage = ((currentIndex + 1) / MEMORIES.length) * 100;
 
   return (
-    <div ref={containerRef} className="relative w-full h-screen overflow-hidden flex flex-col items-center justify-center bg-[#0a0a0a]">
+    <div ref={containerRef} className="relative w-full min-h-[100dvh] h-[100dvh] overflow-hidden flex flex-col items-center justify-center bg-[#0a0a0a]">
       {/* Dark Luxury Background with Pink/Gold Glow */}
       <div className="absolute inset-0 z-0 bg-[#0a0a0a]">
         <div ref={ambientBloomRef} className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(244,63,94,0.18),transparent_70%)] opacity-0 scale-100 pointer-events-none" style={{ willChange: "transform, opacity" }} />
