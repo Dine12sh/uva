@@ -570,11 +570,16 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
             removeListeners();
             if (observerRef.current) observerRef.current.disconnect();
-          }, 2500);
+          }, 1200);
         };
 
-        const handleUserInteraction = () => {
+        const handleUserInteraction = (e?: Event) => {
           if (userInteractedRef.current) return;
+          
+          // Ignore programmatic scroll events
+          if (isAutoScrollingRef.current) return;
+
+          console.log("[DEBUG] User manual scroll detected. Cancelling auto-scroll countdown.");
           userInteractedRef.current = true;
 
           // Make sure timeline and other sections are mounted immediately
@@ -605,15 +610,11 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
         const removeListeners = () => {
           window.removeEventListener("wheel", handleUserInteraction);
           window.removeEventListener("touchmove", handleUserInteraction);
-          window.removeEventListener("pointerdown", handleUserInteraction);
-          window.removeEventListener("keydown", handleUserInteraction);
           window.removeEventListener("scroll", handleUserInteraction);
         };
 
         window.addEventListener("wheel", handleUserInteraction, { passive: true });
         window.addEventListener("touchmove", handleUserInteraction, { passive: true });
-        window.addEventListener("pointerdown", handleUserInteraction, { passive: true });
-        window.addEventListener("keydown", handleUserInteraction, { passive: true });
         window.addEventListener("scroll", handleUserInteraction, { passive: true });
 
         // Set up IntersectionObserver to trigger countdown only when Explore section (final card) becomes visible in viewport
