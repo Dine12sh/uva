@@ -473,23 +473,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
           const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
           if (prefersReducedMotion) return;
 
-          // Timeout 0.4s: Fade in transition hint card softly
-          hintTimeoutRef.current = setTimeout(() => {
-            if (userInteractedRef.current) return;
 
-            gsap.killTweensOf(scrollHintRef.current);
-            gsap.to(scrollHintRef.current, {
-              opacity: 1,
-              y: 0,
-              duration: 0.65,
-              ease: "power2.out"
-            });
-
-            // Fade out the down arrow indicator
-            if (arrowPulse) arrowPulse.kill();
-            gsap.killTweensOf(downArrowRef.current);
-            gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.5, ease: "power2.in" });
-          }, 400);
 
           // Timeout 1.2s: Smooth programmatic cinematic scroll (gives user 1.2s to enjoy)
           scrollTimeoutRef.current = setTimeout(async () => {
@@ -514,13 +498,13 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
               // Pause heavy floating animations during scroll for optimal 60 FPS
               if (floatTweenRef.current) floatTweenRef.current.pause();
 
-              // Fade out the down arrow and hint label
+              // Fade out the down arrow and fade in the hint label
               if (arrowPulse) arrowPulse.kill();
               gsap.killTweensOf(downArrowRef.current);
               gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.35, ease: "power2.in" });
 
               gsap.killTweensOf(scrollHintRef.current);
-              gsap.to(scrollHintRef.current, { opacity: 0, y: -10, duration: 0.35, ease: "power2.in" });
+              gsap.to(scrollHintRef.current, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" });
 
               // Ambient bloom glow screen transition
               if (ambientBloomRef.current) {
@@ -593,6 +577,12 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
                 }, 500);
 
                 console.log("[DEBUG] Scroll triggered. Keeping hero section overlay visible.");
+
+                // Fade out hint card after scroll completes
+                setTimeout(() => {
+                  gsap.killTweensOf(scrollHintRef.current);
+                  gsap.to(scrollHintRef.current, { opacity: 0, y: -10, duration: 0.5, ease: "power2.in" });
+                }, 2200);
 
               } catch (err) {
                 console.error("[DEBUG] Auto-scroll failed:", err);
@@ -927,7 +917,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
               style={{ transform: "translate3d(0, 15px, 0)", willChange: "transform, opacity" }}
             >
               <span className="text-[10px] font-sans uppercase tracking-widest opacity-80 font-semibold drop-shadow-md">
-                Scroll to Explore
+
               </span>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5 text-pink-400">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
