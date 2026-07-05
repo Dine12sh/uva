@@ -14,7 +14,7 @@ export default function IntroScreen({ onComplete }: IntroScreenProps) {
   const [stage, setStage] = useState<"text" | "gift" | "opening" | "complete">("text");
   // @ts-ignore
   const setPlaying = useMusicStore((state: any) => state.setPlaying);
-  
+
   const { triggerFireworks, triggerBalloons, triggerConfetti } = useCelebrationStore();
 
   // Handle auto transitions
@@ -30,10 +30,10 @@ export default function IntroScreen({ onComplete }: IntroScreenProps) {
   const handleOpenGift = () => {
     if (stage !== "gift") return;
     setStage("opening");
-    
+
     // Start background music (requires user gesture)
     setPlaying(true);
-    
+
     // Trigger celebrations
     triggerConfetti();
     triggerFireworks();
@@ -48,7 +48,7 @@ export default function IntroScreen({ onComplete }: IntroScreenProps) {
 
   // Split text into lines/words for staggered animations
   const line1 = "A Cutiepie Was Born Today";
-  const line2 = "21 Years Ago! 🎂✨";
+  const line2 = "25 Years Ago! 🎂✨";
   const subtitle = "Yes, it's YOU! A little surprise awaits...";
 
   return (
@@ -71,7 +71,7 @@ export default function IntroScreen({ onComplete }: IntroScreenProps) {
             }}
           />
         ))}
-        
+
         {/* Soft Aurora Glow Lights */}
         <div className="absolute -top-40 left-1/4 h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,rgba(88,28,135,0.25)_0%,transparent_60%)] animate-pulse duration-[8000ms]" />
         <div className="absolute -bottom-40 right-1/4 h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,rgba(131,24,67,0.25)_0%,transparent_60%)] animate-pulse duration-[10000ms]" />
@@ -169,7 +169,7 @@ export default function IntroScreen({ onComplete }: IntroScreenProps) {
                 <div className="absolute top-0 bottom-0 left-[76px] w-6 bg-amber-400" />
                 {/* Horizontal Ribbon */}
                 <div className="absolute left-0 right-0 top-[76px] h-6 bg-amber-400" />
-                
+
                 {/* Internal sparkle shine */}
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] animate-[shimmer_3s_infinite]" />
               </div>

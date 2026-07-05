@@ -76,6 +76,47 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
     };
   }, [showMain]);
 
+  // Handle auto-scroll to interactive cake section after showContent is true
+  useEffect(() => {
+    if (!showContent) return;
+
+    let mounted = true;
+    let rafId1: number;
+    let rafId2: number;
+
+    const performScroll = () => {
+      if (!mounted) return;
+      const target = document.getElementById("interactive-cake");
+      if (target) {
+        console.log("[MainPageWrapper] Target Interactive Cake found. Initiating scroll.");
+        if ((window as any).lenis) {
+          (window as any).lenis.scrollTo("#interactive-cake", {
+            duration: 2.0,
+          });
+        } else {
+          target.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }
+      } else {
+        // Target element not mounted yet, retry on next animation frame
+        rafId2 = requestAnimationFrame(performScroll);
+      }
+    };
+
+    // Double RAF to wait for React rendering and DOM reconcile
+    rafId1 = requestAnimationFrame(() => {
+      rafId2 = requestAnimationFrame(performScroll);
+    });
+
+    return () => {
+      mounted = false;
+      cancelAnimationFrame(rafId1);
+      cancelAnimationFrame(rafId2);
+    };
+  }, [showContent]);
+
   return (
     <>
       {/* Global Canvas celebration engine (idle by default, triggered globally) */}

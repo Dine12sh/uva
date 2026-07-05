@@ -41,29 +41,6 @@ const MEMORIES = [
   },
 ];
 
-function waitForElement(id: string, timeout = 10000): Promise<HTMLElement> {
-  return new Promise((resolve, reject) => {
-    const el = document.getElementById(id);
-    if (el) return resolve(el);
-
-    const observer = new MutationObserver(() => {
-      const el = document.getElementById(id);
-      if (el) {
-        resolve(el);
-        observer.disconnect();
-      }
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    setTimeout(() => {
-      observer.disconnect();
-      const el = document.getElementById(id);
-      if (el) resolve(el);
-      else reject(new Error(`Element with id ${id} not found within ${timeout}ms`));
-    }, timeout);
-  });
-}
 
 export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode, onRevealComplete }: MemoryRevealHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(-1);
@@ -83,16 +60,9 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
   const finalPhotoRef = useRef<HTMLDivElement>(null);
   const ambientBloomRef = useRef<HTMLDivElement>(null);
 
-  // Climax auto scroll & hint refs
+  // Climax hint and animation refs
   const downArrowRef = useRef<HTMLDivElement>(null);
   const scrollHintRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const hasAutoScrolledRef = useRef(false);
-
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const hintTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isAutoScrollingRef = useRef(false);
-  const userInteractedRef = useRef(false);
   const floatTweenRef = useRef<gsap.core.Tween | null>(null);
 
   const { triggerBalloons, triggerFireworks, triggerHearts, triggerConfetti, setExploding } = useCelebrationStore();
@@ -462,198 +432,15 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
         ease: "sine.inOut"
       }, 7.85);
 
-      // ==================startAutoScrollCountdown========================
-      // CINEMATIC CLIMAX AUTO-SCROLL CONTROLLER
-      // ==========================================
+      // Fade out arrow and fade in hint card at 8.55s
+      tl.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.5, ease: "power2.in" }, 8.55);
+      tl.to(scrollHintRef.current, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 8.55);
+
+      // Fade out hint card after 2.5s
+      tl.to(scrollHintRef.current, { opacity: 0, y: -10, duration: 0.5, ease: "power2.in" }, 11.05);
+
+      // At 8.55s, unlock scroll and notify parent
       tl.add(() => {
-        const startAutoScrollCountdown = () => {
-          if (hasAutoScrolledRef.current || userInteractedRef.current) return;
-
-          // Accessibility check: disable auto-scroll if user prefers reduced motion
-          const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-          if (prefersReducedMotion) return;
-
-
-
-          // Timeout 1.2s: Smooth programmatic cinematic scroll (gives user 1.2s to enjoy)
-          scrollTimeoutRef.current = setTimeout(async () => {
-            if (userInteractedRef.current) return;
-            console.log("[DEBUG] Scroll timer fired. Triggering reveal complete to mount content...");
-
-            // Trigger parent wrapper to mount the timeline and other sections
-            onRevealComplete?.();
-
-            // Give React a tick to reconcile the DOM and start dynamic imports
-            await new Promise(r => setTimeout(r, 150));
-
-            try {
-              const target = await waitForElement("interactive-cake");
-              console.log("[DEBUG] Target verified. ID:", target.id, "offsetTop:", target.offsetTop);
-              console.log("[DEBUG] Lenis state:", (window as any).lenis ? "Ready" : "Not Found");
-              console.log("[DEBUG] Current scrollY:", window.scrollY);
-
-              isAutoScrollingRef.current = true;
-              hasAutoScrolledRef.current = true;
-
-              // Pause heavy floating animations during scroll for optimal 60 FPS
-              if (floatTweenRef.current) floatTweenRef.current.pause();
-
-              // Fade out the down arrow and fade in the hint label
-              if (arrowPulse) arrowPulse.kill();
-              gsap.killTweensOf(downArrowRef.current);
-              gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.35, ease: "power2.in" });
-
-              gsap.killTweensOf(scrollHintRef.current);
-              gsap.to(scrollHintRef.current, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" });
-
-              // Ambient bloom glow screen transition
-              if (ambientBloomRef.current) {
-                gsap.fromTo(ambientBloomRef.current,
-                  { opacity: 0.18, scale: 1.0 },
-                  { opacity: 0.85, scale: 1.8, duration: 0.9, yoyo: true, repeat: 1, ease: "sine.inOut" }
-                );
-              }
-
-              // Launch floating hearts up during scroll
-              if (particlesRef.current) {
-                const hearts = Array.from(particlesRef.current.children)
-                  .filter(el => el.dataset.type === "heart")
-                  .slice(0, 15);
-
-                hearts.forEach((el) => {
-                  const startX = gsap.utils.random(-window.innerWidth * 0.45, window.innerWidth * 0.45);
-                  const startY = window.innerHeight * 0.5 + 50;
-                  const targetY = -window.innerHeight * 0.5 - 50;
-
-                  gsap.set(el, { x: startX, y: startY, scale: gsap.utils.random(1.2, 1.8), opacity: 0 });
-                  gsap.to(el, { opacity: 0.85, duration: 0.35 });
-                  gsap.to(el, {
-                    y: targetY,
-                    x: startX + gsap.utils.random(-120, 120),
-                    rotation: gsap.utils.random(-180, 180),
-                    duration: 1.8,
-                    ease: "sine.out"
-                  });
-                  gsap.to(el, { opacity: 0, delay: 1.4, duration: 0.4 });
-                });
-              }
-
-              try {
-                console.log("[DEBUG] Commencing scroll now...");
-
-                // Enable scroll right before scrolling starts
-                document.body.style.overflow = "";
-                document.documentElement.style.overflow = "";
-                if ((window as any).lenis) {
-                  try {
-                    (window as any).lenis.start();
-                  } catch (e) { }
-                }
-
-                // Small delay to ensure Lenis is fully ready after .start()
-                await new Promise(r => setTimeout(r, 50));
-
-                // Smooth programmatic cinematic scroll with retry fallback
-                const targetEl = document.getElementById("interactive-cake");
-                const performScroll = () => {
-                  if ((window as any).lenis) {
-                    (window as any).lenis.scrollTo("#interactive-cake", {
-                      duration: 1.8,
-                      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
-                    });
-                  } else if (targetEl) {
-                    targetEl.scrollIntoView({ behavior: "smooth" });
-                  }
-                };
-
-                performScroll();
-
-                // Retry fallback: if scroll didn't move after 500ms, try again
-                setTimeout(() => {
-                  if (window.scrollY < 50 && targetEl) {
-                    console.log("[DEBUG] Scroll retry — first attempt may not have moved.");
-                    performScroll();
-                  }
-                }, 500);
-
-                console.log("[DEBUG] Scroll triggered. Keeping hero section overlay visible.");
-
-                // Fade out hint card after scroll completes
-                setTimeout(() => {
-                  gsap.killTweensOf(scrollHintRef.current);
-                  gsap.to(scrollHintRef.current, { opacity: 0, y: -10, duration: 0.5, ease: "power2.in" });
-                }, 2200);
-
-              } catch (err) {
-                console.error("[DEBUG] Auto-scroll failed:", err);
-                // Ultimate fallback: native scroll
-                const fallbackEl = document.getElementById("interactive-cake");
-                if (fallbackEl) fallbackEl.scrollIntoView({ behavior: "smooth" });
-              }
-
-            } catch (err) {
-              console.error("[DEBUG] Auto-scroll failed:", err);
-            }
-
-            removeListeners();
-            if (observerRef.current) observerRef.current.disconnect();
-          }, 1200);
-        };
-
-        const handleUserInteraction = (e?: Event) => {
-          if (userInteractedRef.current) return;
-
-          // Ignore programmatic scroll events
-          if (isAutoScrollingRef.current) return;
-
-          console.log("[DEBUG] User manual scroll detected. Cancelling auto-scroll countdown.");
-          userInteractedRef.current = true;
-
-          // Make sure timeline and other sections are mounted immediately
-          onRevealComplete?.();
-
-          if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
-          if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-
-          // Instantly fade out arrow and hint
-          gsap.killTweensOf(scrollHintRef.current);
-          gsap.to(scrollHintRef.current, { opacity: 0, y: 15, duration: 0.35, ease: "power2.in" });
-
-          if (arrowPulse) arrowPulse.kill();
-          gsap.killTweensOf(downArrowRef.current);
-          gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.3, ease: "power2.in" });
-
-          // Proceed with native user scroll, keep hero overlay visible
-          onExplode();
-
-          removeListeners();
-          if (observerRef.current) observerRef.current.disconnect();
-        };
-
-        const removeListeners = () => {
-          window.removeEventListener("wheel", handleUserInteraction);
-          window.removeEventListener("touchmove", handleUserInteraction);
-          window.removeEventListener("scroll", handleUserInteraction);
-        };
-
-        window.addEventListener("wheel", handleUserInteraction, { passive: true });
-        window.addEventListener("touchmove", handleUserInteraction, { passive: true });
-        window.addEventListener("scroll", handleUserInteraction, { passive: true });
-
-        // Set up IntersectionObserver to trigger countdown only when Explore section (final card) becomes visible in viewport
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting && !hasAutoScrolledRef.current && !userInteractedRef.current) {
-              startAutoScrollCountdown();
-            }
-          });
-        }, { threshold: 0.15 });
-
-        if (finalRevealRef.current) {
-          observer.observe(finalRevealRef.current);
-        }
-        observerRef.current = observer;
-
         // Unlock scroll immediately when final card is shown to allow native interaction
         document.body.style.overflow = "";
         document.documentElement.style.overflow = "";
@@ -663,16 +450,10 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
           } catch (e) { }
         }
 
-        // Directly kick off the auto-scroll countdown
-        startAutoScrollCountdown();
-
-        // Safe unmount context hooks
-        ctx.add(() => {
-          if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
-          if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-          if (observerRef.current) observerRef.current.disconnect();
-          removeListeners();
-        });
+        // Notify parent that reveal is complete
+        onRevealComplete?.();
+        // Trigger onExplode to restore scrolling globally
+        onExplode();
       }, 8.55);
 
     }, containerRef);
@@ -930,7 +711,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
               className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[155] px-5 py-2.5 rounded-full bg-pink-950/60 border border-pink-500/30 backdrop-blur-md shadow-[0_0_30px_rgba(244,63,94,0.3)] pointer-events-none opacity-0 select-none flex items-center justify-center text-xs text-pink-200 gap-2 tracking-widest font-semibold uppercase animate-pulse"
               style={{ transform: "translate3d(0, 15px, 0)", willChange: "transform, opacity" }}
             >
-              ✨ Scrolling to our story...
+              Scroll Down to section
             </div>
           </div>
         </>
