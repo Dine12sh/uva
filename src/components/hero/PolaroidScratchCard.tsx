@@ -340,7 +340,7 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
             <button
               ref={buttonRef}
               disabled={parentDisabled || isNavigating}
-              onClick={(e) => handleNextClick(e)}
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleNextClick(e)}
               onKeyDown={handleKeyDown}
               aria-label={isFinal ? "Open My Heart" : "Next Memory"}
               className={`relative overflow-hidden px-8 py-4 rounded-full font-bold text-lg text-white shadow-2xl transition-all duration-300 pointer-events-auto ${

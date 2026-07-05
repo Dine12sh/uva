@@ -5,7 +5,7 @@ import Lenis from "lenis";
 // @ts-ignore
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause } from "lucide-react";
+
 
 // Static imports for initial view components
 import CountdownIntro from "./CountdownIntro";
@@ -16,8 +16,8 @@ import AtmosphericBackground from "./AtmosphericBackground";
 const CelebrationEngine = dynamic(() => import("./CelebrationEngine"), { ssr: false });
 const HeroSection = dynamic(() => import("./HeroSection"));
 const Timeline = dynamic(() => import("./Timeline"));
-const MemoryGallery = dynamic(() => import("./MemoryGallery"));
-const VideoSection = dynamic(() => import("./VideoSection"));
+const MemoryGallery = dynamic<{ memories: any[] }>(() => import("./MemoryGallery"));
+const VideoSection = dynamic<{ memories: any[] }>(() => import("./VideoSection"));
 const InteractiveCake = dynamic(() => import("./InteractiveCake"), { ssr: false });
 const BalloonGame = dynamic(() => import("./BalloonGame"));
 const WishesLetter = dynamic(() => import("./WishesLetter"));
@@ -100,9 +100,9 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
             animate={{ opacity: 1 }}
             transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
             className="relative min-h-[100dvh] text-white selection:bg-pink-500 selection:text-white overflow-x-hidden bg-transparent"
-            style={{ 
-              paddingTop: 'env(safe-area-inset-top)', 
-              paddingBottom: 'env(safe-area-inset-bottom)' 
+            style={{
+              paddingTop: 'env(safe-area-inset-top)',
+              paddingBottom: 'env(safe-area-inset-bottom)'
             }}
           >
             {/* Background Layers */}
@@ -110,42 +110,42 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
 
             {/* Front sections z-indexed above background */}
             <div className="relative z-10">
-              {/* 3. Hero Section (Netflix Intro -> Cinematic) */}
+              {/* 1. Hero Section (Netflix Intro -> Cinematic) */}
               <HeroSection onRevealComplete={() => setShowContent(true)} />
 
               {showContent && (
                 <>
-                  {/* 4. Journey Timeline */}
-                  <Timeline />
-
-                  {/* 5. Photo Masonry Gallery */}
-                  <MemoryGallery memories={memories} />
-
-                  {/* 6. Video memories Slider */}
-                  <VideoSection memories={memories} />
-
-                  {/* 7. Interactive 3D Birthday Cake Section */}
+                  {/* 2. Interactive 3D Birthday Cake Section */}
                   <section id="interactive-cake" className="py-24 px-6 md:px-16 bg-black/70">
                     <div className="max-w-4xl mx-auto">
                       <InteractiveCake />
                     </div>
                   </section>
 
-                  {/* 8. Balloon Pop Mini Game */}
+                  {/* 3. Balloon Pop Mini Game */}
                   <BalloonGame />
 
-                  {/* 9. Sealed handwritten letter wishes */}
+                  {/* 4. Sealed handwritten letter wishes */}
                   <section id="wishes-letter" className="py-24 px-6 md:px-16 bg-black/50">
                     <div className="max-w-3xl mx-auto">
                       <WishesLetter />
                     </div>
                   </section>
 
-                  {/* 10. Final Cinematic Surprise Ending */}
+                  {/* 5. Final Cinematic Surprise Ending */}
                   <FinalSurprise />
 
-                  {/* 11. Gift Reveal */}
+                  {/* 6. Gift Reveal */}
                   <GiftReveal />
+
+                  {/* 7. Journey Timeline */}
+                  <Timeline />
+
+                  {/* 8. Photo Masonry Gallery */}
+                  <MemoryGallery memories={memories} />
+
+                  {/* 9. Video memories Slider */}
+                  <VideoSection memories={memories} />
                 </>
               )}
             </div>

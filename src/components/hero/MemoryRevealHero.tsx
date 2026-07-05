@@ -10,7 +10,6 @@ import { PolaroidScratchCard } from "./PolaroidScratchCard";
 
 interface MemoryRevealHeroProps {
   onExplode: () => void;
-  onHeroComplete?: () => void;
   onRevealComplete?: () => void;
 }
 
@@ -42,10 +41,33 @@ const MEMORIES = [
   },
 ];
 
-export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode, onHeroComplete, onRevealComplete }: MemoryRevealHeroProps) {
+function waitForElement(id: string, timeout = 10000): Promise<HTMLElement> {
+  return new Promise((resolve, reject) => {
+    const el = document.getElementById(id);
+    if (el) return resolve(el);
+
+    const observer = new MutationObserver(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        resolve(el);
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    setTimeout(() => {
+      observer.disconnect();
+      const el = document.getElementById(id);
+      if (el) resolve(el);
+      else reject(new Error(`Element with id ${id} not found within ${timeout}ms`));
+    }, timeout);
+  });
+}
+
+export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode, onRevealComplete }: MemoryRevealHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isExploding, setIsExploding] = useState(false);
-  const [isExplosionFinished, setIsExplosionFinished] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -477,8 +499,11 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
             // Trigger parent wrapper to mount the timeline and other sections
             onRevealComplete?.();
 
+            // Give React a tick to reconcile the DOM and start dynamic imports
+            await new Promise(r => setTimeout(r, 150));
+
             try {
-              const target = await waitForElement("friendship-timeline");
+              const target = await waitForElement("interactive-cake");
               console.log("[DEBUG] Target verified. ID:", target.id, "offsetTop:", target.offsetTop);
               console.log("[DEBUG] Lenis state:", (window as any).lenis ? "Ready" : "Not Found");
               console.log("[DEBUG] Current scrollY:", window.scrollY);
@@ -531,37 +556,49 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
               try {
                 console.log("[DEBUG] Commencing scroll now...");
-                
+
                 // Enable scroll right before scrolling starts
                 document.body.style.overflow = "";
                 document.documentElement.style.overflow = "";
                 if ((window as any).lenis) {
                   try {
                     (window as any).lenis.start();
-                  } catch (e) {}
+                  } catch (e) { }
                 }
 
-                // Smooth programmatic cinematic scroll
-                const targetEl = document.getElementById("friendship-timeline");
-                if ((window as any).lenis) {
-                  (window as any).lenis.scrollTo("#friendship-timeline", {
-                    duration: 1.8,
-                    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
-                  });
-                } else {
-                  targetEl?.scrollIntoView({ behavior: "smooth" });
-                }
+                // Small delay to ensure Lenis is fully ready after .start()
+                await new Promise(r => setTimeout(r, 50));
 
-                console.log("[DEBUG] Scroll triggered. Unmounting hero section overlay in 1.8s...");
-                // Complete explosion and unmount Hero after scroll finishes
+                // Smooth programmatic cinematic scroll with retry fallback
+                const targetEl = document.getElementById("interactive-cake");
+                const performScroll = () => {
+                  if ((window as any).lenis) {
+                    (window as any).lenis.scrollTo("#interactive-cake", {
+                      duration: 1.8,
+                      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+                    });
+                  } else if (targetEl) {
+                    targetEl.scrollIntoView({ behavior: "smooth" });
+                  }
+                };
+
+                performScroll();
+
+                // Retry fallback: if scroll didn't move after 500ms, try again
                 setTimeout(() => {
-                  console.log("[DEBUG] Hero overlay unmounted successfully.");
-                  setIsExplosionFinished(true);
-                  onHeroComplete?.();
-                }, 1800);
+                  if (window.scrollY < 50 && targetEl) {
+                    console.log("[DEBUG] Scroll retry — first attempt may not have moved.");
+                    performScroll();
+                  }
+                }, 500);
+
+                console.log("[DEBUG] Scroll triggered. Keeping hero section overlay visible.");
 
               } catch (err) {
                 console.error("[DEBUG] Auto-scroll failed:", err);
+                // Ultimate fallback: native scroll
+                const fallbackEl = document.getElementById("interactive-cake");
+                if (fallbackEl) fallbackEl.scrollIntoView({ behavior: "smooth" });
               }
 
             } catch (err) {
@@ -575,7 +612,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
         const handleUserInteraction = (e?: Event) => {
           if (userInteractedRef.current) return;
-          
+
           // Ignore programmatic scroll events
           if (isAutoScrollingRef.current) return;
 
@@ -596,12 +633,8 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
           gsap.killTweensOf(downArrowRef.current);
           gsap.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.3, ease: "power2.in" });
 
-          // Proceed with native user scroll, clear hero overlay
+          // Proceed with native user scroll, keep hero overlay visible
           onExplode();
-          setTimeout(() => {
-            setIsExplosionFinished(true);
-            onHeroComplete?.();
-          }, 1000);
 
           removeListeners();
           if (observerRef.current) observerRef.current.disconnect();
@@ -648,11 +681,11 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       if ((window as any).lenis) {
         try {
           (window as any).lenis.start();
-        } catch (e) {}
+        } catch (e) { }
       }
       ctx.revert();
     };
-  }, [isExploding, triggerConfetti, triggerFireworks, triggerHearts, triggerBalloons, onExplode, onHeroComplete]);
+  }, [isExploding, triggerConfetti, triggerFireworks, triggerHearts, triggerBalloons, onExplode]);
 
   const progressPercentage = ((currentIndex + 1) / MEMORIES.length) * 100;
 
@@ -735,7 +768,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       </div>
 
       {/* CINEMATIC FINALE OVERLAYS */}
-      {!isExplosionFinished && isExploding && (
+      {isExploding && (
         <>
           {/* Phase 5: Solid White Flash */}
           <div

@@ -1,5 +1,3 @@
-"use strict";
-
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -66,10 +64,10 @@ export async function uploadMemoryAction(data: {
     }
 
     const fileBuffer = Buffer.from(base64Content, "base64");
-    
+
     // Save locally to public/media
     const uploadDir = path.join(process.cwd(), "public", "media");
-    
+
     // Ensure directory exists
     await fs.mkdir(uploadDir, { recursive: true });
 
