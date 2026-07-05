@@ -111,7 +111,9 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
             {/* Front sections z-indexed above background */}
             <div className="relative z-10">
               {/* 1. Hero Section (Netflix Intro -> Cinematic) */}
-              <HeroSection onRevealComplete={() => setShowContent(true)} />
+              <section id="hero">
+                <HeroSection onRevealComplete={() => setShowContent(true)} />
+              </section>
 
               {showContent && (
                 <>

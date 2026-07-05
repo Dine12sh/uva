@@ -462,7 +462,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
         ease: "sine.inOut"
       }, 7.85);
 
-      // ==========================================
+      // ==================startAutoScrollCountdown========================
       // CINEMATIC CLIMAX AUTO-SCROLL CONTROLLER
       // ==========================================
       tl.add(() => {
@@ -663,6 +663,18 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
           observer.observe(finalRevealRef.current);
         }
         observerRef.current = observer;
+
+        // Unlock scroll immediately when final card is shown to allow native interaction
+        document.body.style.overflow = "";
+        document.documentElement.style.overflow = "";
+        if ((window as any).lenis) {
+          try {
+            (window as any).lenis.start();
+          } catch (e) { }
+        }
+
+        // Directly kick off the auto-scroll countdown
+        startAutoScrollCountdown();
 
         // Safe unmount context hooks
         ctx.add(() => {
