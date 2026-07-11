@@ -8,7 +8,7 @@ export const PAGE_TRANSITION = {
   initial: { opacity: 0 },
   animate: {
     opacity: 1,
-    transition: { duration: 1.5, ease: [0.16, 1, 0.3, 1] },
+    transition: { duration: 1.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
   },
 };
 
