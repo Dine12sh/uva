@@ -56,14 +56,14 @@ export default function CountdownIntro({ onComplete }: CountdownIntroProps) {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(244,63,94,0.15)_0%,transparent_50%)]" />
 
           {/* Loading Text */}
-          <motion.div
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.5 }}
-            className="text-amber-200 text-sm md:text-base font-light tracking-[0.3em] uppercase mb-8 z-10"
+            className="text-amber-200 text-sm sm:text-base md:text-lg font-light tracking-[0.15em] uppercase mb-8 z-10 text-center px-6 max-w-xl mx-auto leading-relaxed"
           >
-            Something special is loading...
-          </motion.div>
+            Make Your Own Personalized Birthday Website In Just 30 Seconds!
+          </motion.h1>
 
           {/* Main Countdown Number */}
           <div className="relative z-10 h-32 md:h-48 flex items-center justify-center">

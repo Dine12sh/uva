@@ -354,16 +354,25 @@ body {
 }
 
 /* ==============================
-   Masonry Gallery
+   Masonry Gallery & Scroll Carousel
    ============================== */
 .masonry-grid {
-  columns: 1;
-  column-gap: 1rem;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  gap: 1rem;
+  padding-bottom: 1.5rem;
 }
 
 @media (min-width: 640px) {
   .masonry-grid {
+    display: block;
     columns: 2;
+    column-gap: 1rem;
+    overflow-x: visible;
+    scroll-snap-type: none;
+    padding-bottom: 0;
   }
 }
 
@@ -382,8 +391,18 @@ body {
 }
 
 .masonry-item {
+  flex: 0 0 85vw;
+  scroll-snap-align: center;
   break-inside: avoid;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
+}
+
+@media (min-width: 640px) {
+  .masonry-item {
+    flex: none;
+    scroll-snap-align: none;
+    margin-bottom: 1rem;
+  }
 }
 
 @media (min-width: 768px) {
@@ -396,4 +415,13 @@ body {
   .masonry-item {
     margin-bottom: 1.5rem;
   }
+}
+
+/* Scrollbar hiding helper */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }

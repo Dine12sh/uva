@@ -8,8 +8,8 @@ interface WishesLetterProps {
   customMessage?: string;
 }
 
-const defaultMessage = `Dear Friend,
-Happiest Birthday to the Beautiful Soul Born Today!
+const defaultMessage = `Dear Yuvashree,
+Happiest 25th Birthday to the Beautiful Soul Born on July 31!
 
 Every memory we've shared has made life brighter and more meaningful.
 
@@ -19,7 +19,7 @@ May this birthday bring happiness, success, peace, good health, and endless reas
 
 You truly deserve the very best.
 
-🎂 Happy Birthday 🎂`;
+🎂 Happy 25th Birthday, Yuvashree! 🎂`;
 
 export default function WishesLetter({ customMessage }: WishesLetterProps) {
   const [isOpen, setIsOpen] = useState(false);

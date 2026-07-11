@@ -179,12 +179,12 @@ const Timeline = React.memo(function Timeline() {
         {/* Timeline Container */}
         <div className="relative mt-12">
           {/* Background Central Line */}
-          <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-[4px] bg-zinc-800 rounded-full transform -translate-x-1/2 pointer-events-none" />
+          <div className="absolute left-5 md:left-1/2 top-0 bottom-0 w-[4px] bg-zinc-800 rounded-full transform -translate-x-1/2 pointer-events-none" />
 
           {/* Glowing Animated Scroll Line */}
           <div
             ref={lineRef}
-            className="absolute left-4 md:left-1/2 top-0 bottom-0 w-[4px] bg-gradient-to-b from-rose-400 via-pink-500 to-amber-400 rounded-full transform -translate-x-1/2 origin-top pointer-events-none shadow-[0_0_10px_rgba(244,63,94,0.5)]"
+            className="absolute left-5 md:left-1/2 top-0 bottom-0 w-[4px] bg-gradient-to-b from-rose-400 via-pink-500 to-amber-400 rounded-full transform -translate-x-1/2 origin-top pointer-events-none shadow-[0_0_10px_rgba(244,63,94,0.5)]"
             style={{ willChange: "transform" }}
           />
 
@@ -199,7 +199,7 @@ const Timeline = React.memo(function Timeline() {
                     }`}
                 >
                   {/* Timeline bullet node */}
-                  <div className="absolute left-4 md:left-1/2 w-8 h-8 rounded-full bg-slate-900 border-[3px] border-pink-400 shadow-[0_0_10px_rgba(244,63,94,0.4)] flex items-center justify-center text-xs z-10 transform -translate-x-1/2">
+                  <div className="absolute left-5 md:left-1/2 w-8 h-8 rounded-full bg-slate-900 border-[3px] border-pink-400 shadow-[0_0_10px_rgba(244,63,94,0.4)] flex items-center justify-center text-xs z-10 transform -translate-x-1/2">
                     <span className="scale-75">{item.emoji}</span>
                   </div>
 

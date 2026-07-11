@@ -514,7 +514,8 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="absolute top-10 flex flex-col items-center gap-3 z-50 w-full px-8 max-w-md"
+            className="absolute flex flex-col items-center gap-3 z-50 w-full px-8 max-w-md"
+            style={{ top: "calc(2.5rem + env(safe-area-inset-top))" }}
           >
             <span className="text-white/80 font-serif text-lg md:text-xl tracking-widest drop-shadow-md">
               Memory {currentIndex + 1} / {MEMORIES.length}

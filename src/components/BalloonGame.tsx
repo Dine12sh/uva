@@ -137,7 +137,7 @@ export default function BalloonGame() {
             <div className="absolute inset-0 flex items-center justify-center">
               <AnimatePresence mode="wait">
                 {currentIndex < 5 && (
-                  <motion.div
+                  <motion.button
                     key={currentIndex}
                     initial={{ scale: 0, opacity: 0, y: 50 }}
                     animate={{
@@ -151,8 +151,9 @@ export default function BalloonGame() {
                       }
                     }}
                     exit={{ scale: 1.5, opacity: 0, filter: "blur(10px)", transition: { duration: 0.4 } }}
-                    className="relative flex flex-col items-center cursor-pointer group"
+                    className="relative flex flex-col items-center cursor-pointer group focus:outline-none border-none bg-transparent p-0 select-none pointer-events-auto touch-manipulation min-h-[220px] justify-between"
                     onClick={() => handlePop(currentIndex)}
+                    aria-label={`Pop balloon ${currentIndex + 1}`}
                   >
                     {/* The Balloon */}
                     <div
@@ -189,7 +190,7 @@ export default function BalloonGame() {
                         ))}
                       </motion.div>
                     )}
-                  </motion.div>
+                  </motion.button>
                 )}
               </AnimatePresence>
 

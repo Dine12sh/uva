@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 // @ts-ignore
 import { Maximize2, Minimize2, Play, Pause, ChevronLeft, ChevronRight, X } from "lucide-react";
@@ -23,9 +23,18 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [scrollIndex, setScrollIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Filter memories to images only
   const images = memories.filter((m) => m.type === "photo");
+
+  const handleScroll = () => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, clientWidth } = scrollRef.current;
+    const index = Math.round(scrollLeft / (clientWidth * 0.85 + 16));
+    setScrollIndex(Math.min(images.length - 1, Math.max(0, index)));
+  };
 
   // Slideshow effect
   useEffect(() => {
@@ -146,7 +155,11 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
         </div>
 
         {/* Masonry Grid */}
-        <div className="masonry-grid">
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="masonry-grid no-scrollbar"
+        >
           {images.map((img, idx) => (
             <motion.div
               key={img.id}
@@ -193,6 +206,25 @@ export default function MemoryGallery({ memories }: MemoryGalleryProps) {
                 </div>
               </div>
             </motion.div>
+          ))}
+        </div>
+
+        {/* Mobile Swipe Pagination Dots */}
+        <div className="flex md:hidden justify-center gap-2 mt-6">
+          {images.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                if (scrollRef.current) {
+                  const itemWidth = scrollRef.current.clientWidth * 0.85 + 16;
+                  scrollRef.current.scrollTo({ left: idx * itemWidth, behavior: "smooth" });
+                }
+              }}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                scrollIndex === idx ? "bg-pink-400 w-5" : "bg-white/20"
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
           ))}
         </div>
       </div>
