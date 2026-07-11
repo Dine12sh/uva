@@ -9,7 +9,7 @@ import { useCelebrationStore } from "../../store/useCelebrationStore";
 import { PolaroidScratchCard } from "./PolaroidScratchCard";
 
 interface MemoryRevealHeroProps {
-
+  onExplode?: () => void;
   onRevealComplete?: () => void;
 }
 
@@ -42,7 +42,7 @@ const MEMORIES = [
 ];
 
 
-export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onRevealComplete }: MemoryRevealHeroProps) {
+export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode, onRevealComplete }: MemoryRevealHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isExploding, setIsExploding] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -478,7 +478,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onRevealC
         // Notify parent that reveal is complete
         onRevealComplete?.();
         // Trigger onExplode to restore scrolling globally
-
+        onExplode?.();
       }, 8.55);
 
     }, containerRef);
