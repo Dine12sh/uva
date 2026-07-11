@@ -34,7 +34,10 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://uva-umber.vercel.app"),
-  title: "UVA ❤️ | Happy Birthday Yuvashree",
+  title: {
+    default: "UVA ❤️ | Happy Birthday Yuvashree",
+    template: "%s | UVA ❤️",
+  },
   description:
     "A cinematic birthday surprise website created for Yuvashree. Explore beautiful memories, heartfelt wishes, interactive moments, and a magical birthday experience.",
   keywords: [
@@ -63,7 +66,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Best Friend", url: "https://uva-umber.vercel.app" }],
   creator: "Best Friend",
+  publisher: "UVA Story",
   category: "Personal",
+  referrer: "origin-when-cross-origin",
   alternates: {
     canonical: "/",
   },
@@ -114,28 +119,52 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "UVA Birthday Story",
-    url: "https://uva-umber.vercel.app",
-    description:
-      "A cinematic birthday surprise website created for Yuvashree. Explore beautiful memories, heartfelt wishes, interactive moments, and a magical birthday experience.",
-    inLanguage: "en",
-    author: {
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://uva-umber.vercel.app/#website",
+      "name": "UVA Birthday Story",
+      "url": "https://uva-umber.vercel.app",
+      "description": "A cinematic birthday surprise website created for Yuvashree. Explore beautiful memories, heartfelt wishes, interactive moments, and a magical birthday experience.",
+      "inLanguage": "en",
+      "publisher": {
+        "@type": "Organization",
+        "name": "UVA Story",
+        "url": "https://uva-umber.vercel.app"
+      }
+    },
+    {
+      "@context": "https://schema.org",
       "@type": "Person",
-      name: "Best Friend",
+      "@id": "https://uva-umber.vercel.app/#person",
+      "name": "Yuvashree",
+      "description": "Recipient of the cinematic digital birthday surprise story website.",
+      "birthDate": "2001-07-31",
+      "sameAs": []
     },
-    publisher: {
-      "@type": "Organization",
-      name: "UVA Story",
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://uva-umber.vercel.app"
+        }
+      ]
     },
-    about: {
-      "@type": "Person",
-      name: "Yuvashree",
-      description: "Recipient of the cinematic digital birthday surprise story website.",
-    },
-  };
+    {
+      "@context": "https://schema.org",
+      "@type": "ImageObject",
+      "@id": "https://uva-umber.vercel.app/og-image.png",
+      "url": "https://uva-umber.vercel.app/og-image.png",
+      "width": "1200",
+      "height": "630",
+      "caption": "UVA ❤️ | Happy Birthday Yuvashree"
+    }
+  ];
 
   return (
     <html

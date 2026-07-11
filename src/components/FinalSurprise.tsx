@@ -63,7 +63,7 @@ export default function FinalSurprise() {
           <div key={index} className="relative w-full h-full overflow-hidden bg-zinc-950">
             <Image
               src={url}
-              alt="Ending Background Collage"
+              alt="Cinematic background photo collage for Yuvashree"
               fill
               sizes="(max-width: 768px) 50vw, 25vw"
               placeholder="blur"

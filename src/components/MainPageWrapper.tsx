@@ -100,7 +100,7 @@ export const MainPageWrapper = React.memo(function MainPageWrapper({ memories }:
 
         {/* Step 3: Main Experience */}
         {showMain && (
-          <motion.div
+          <motion.main
             key="main"
             variants={PAGE_TRANSITION}
             initial="initial"
@@ -168,7 +168,7 @@ export const MainPageWrapper = React.memo(function MainPageWrapper({ memories }:
                 </>
               )}
             </div>
-          </motion.div>
+          </motion.main>
         )}
       </AnimatePresence>
     </>

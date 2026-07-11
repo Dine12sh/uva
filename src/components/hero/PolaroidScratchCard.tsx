@@ -290,7 +290,7 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
           <div className="relative w-full h-full bg-zinc-900 overflow-hidden shadow-inner">
             <Image
               src={url}
-              alt="Memory"
+              alt={caption || "Birthday surprise memory photo for Yuvashree"}
               fill
               priority={isPriority}
               sizes="(max-width: 768px) 16rem, 20rem"

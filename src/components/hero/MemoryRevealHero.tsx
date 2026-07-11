@@ -647,7 +647,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
                   style={{ willChange: "transform, opacity, filter" }}
                 >
                   <div className="relative w-full h-[78%] bg-zinc-950 overflow-hidden shadow-inner">
-                    <img src={mem.url} alt="Burst memory" className="object-cover w-full h-full" />
+                    <img src={mem.url} alt={mem.caption || "Magical birthday memory burst for Yuvashree"} className="object-cover w-full h-full" />
                   </div>
                   <div className="h-[22%] flex items-center justify-center text-[9px] font-cursive text-zinc-800 leading-none text-center">
                     {mem.caption}
@@ -694,9 +694,9 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
             style={{ display: "none" }}
           >
             <div className="glass-card max-w-sm w-[85vw] p-6 md:p-8 flex flex-col items-center gap-5 border-2 border-pink-400/30 shadow-[0_0_50px_rgba(244,63,94,0.25)] select-none">
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-widest text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-amber-200 to-rose-300 drop-shadow-[0_2px_10px_rgba(244,63,94,0.4)] uppercase">
+              <h2 className="text-2xl md:text-3xl font-extrabold tracking-widest text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-amber-200 to-rose-300 drop-shadow-[0_2px_10px_rgba(244,63,94,0.4)] uppercase">
                 Happy Birthday, Yuvashre! 💖
-              </h1>
+              </h2>
 
               <div
                 ref={finalPhotoRef}
@@ -704,7 +704,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
               >
                 <Image
                   src="/media/IMG_20260615_220045.jpg"
-                  alt="Final Magical Memory"
+                  alt="Magical birthday celebration photo for Yuvashree"
                   fill
                   className="object-cover"
                   unoptimized
