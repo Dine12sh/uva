@@ -9,7 +9,7 @@ import { useCelebrationStore } from "../../store/useCelebrationStore";
 import { PolaroidScratchCard } from "./PolaroidScratchCard";
 
 interface MemoryRevealHeroProps {
-  onExplode: () => void;
+
   onRevealComplete?: () => void;
 }
 
@@ -42,7 +42,7 @@ const MEMORIES = [
 ];
 
 
-export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode, onRevealComplete }: MemoryRevealHeroProps) {
+export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onRevealComplete }: MemoryRevealHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isExploding, setIsExploding] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -62,7 +62,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
   // Climax hint and animation refs
   const downArrowRef = useRef<HTMLDivElement>(null);
-  const scrollHintRef = useRef<HTMLDivElement>(null);
+  const scrollHintRef = useRef<HTMLButtonElement>(null);
   const floatTweenRef = useRef<gsap.core.Tween | null>(null);
 
   const { triggerBalloons, triggerFireworks, triggerHearts, triggerConfetti, setExploding } = useCelebrationStore();
@@ -78,6 +78,28 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
     } else {
       setIsExploding(true);
       setExploding(true);
+    }
+  };
+
+  const handleScrollToCake = () => {
+    const target = document.getElementById("interactive-cake");
+    if (target) {
+      if ((window as any).lenis) {
+        try {
+          (window as any).lenis.scrollTo(target);
+        } catch (e) {
+          console.error("Lenis scrollTo failed, falling back to native scroll", e);
+          target.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        }
+      } else {
+        target.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
     }
   };
 
@@ -98,6 +120,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
     let ctx = gsap.context(() => {
       const isMobile = window.innerWidth < 768;
       const tl = gsap.timeline();
+      tl.timeScale(2.0); // Play the reveal animation sequence at double speed (double time) for a punchy transition
 
       // Prepare initial states of all elements to prevent FOUC (flash of unstyled content)
       gsap.set([heartRef.current, radialRaysRef.current, lightRingRef.current, shockwaveRef.current, memoryBurstRef.current, finalRevealRef.current], { transformOrigin: "center center" });
@@ -406,7 +429,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       // ==========================================
       // Reveal the final birthday card and photo
       tl.set(finalRevealRef.current, { display: "flex", opacity: 0, scale: 0.94 }, 7.05);
-      tl.to(finalRevealRef.current, { opacity: 1, scale: 1.0, duration: 0.8, ease: "power3.out" }, 7.05);
+      tl.to(finalRevealRef.current, { opacity: 1, scale: 1.0, duration: 2.00, ease: "power3.out" }, 7.05);
 
       // Floating animation
       const floatTween = gsap.to(finalPhotoRef.current, {
@@ -434,10 +457,12 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
 
       // Fade out arrow and fade in hint card at 8.55s
       tl.to(downArrowRef.current, { opacity: 0, y: 15, duration: 0.5, ease: "power2.in" }, 8.55);
-      tl.to(scrollHintRef.current, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 8.55);
-
-      // Fade out hint card after 2.5s
-      tl.to(scrollHintRef.current, { opacity: 0, y: -10, duration: 0.5, ease: "power2.in" }, 11.05);
+      tl.to(scrollHintRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        ease: "power2.out"
+      }, 8.55);
 
       // At 8.55s, unlock scroll and notify parent
       tl.add(() => {
@@ -453,7 +478,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
         // Notify parent that reveal is complete
         onRevealComplete?.();
         // Trigger onExplode to restore scrolling globally
-        onExplode();
+
       }, 8.55);
 
     }, containerRef);
@@ -468,7 +493,7 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
       }
       ctx.revert();
     };
-  }, [isExploding, triggerConfetti, triggerFireworks, triggerHearts, triggerBalloons, onExplode]);
+  }, [isExploding, triggerConfetti, triggerFireworks, triggerHearts, triggerBalloons]);
 
   const progressPercentage = ((currentIndex + 1) / MEMORIES.length) * 100;
 
@@ -691,28 +716,36 @@ export const MemoryRevealHero = React.memo(function MemoryRevealHero({ onExplode
               </p>
             </div>
 
-            {/* Subtle Down Arrow Cue for Scroll */}
-            <div
-              ref={downArrowRef}
-              className="absolute bottom-6 flex flex-col items-center gap-1.5 text-pink-300 opacity-0 select-none pointer-events-none"
-              style={{ transform: "translate3d(0, 15px, 0)", willChange: "transform, opacity" }}
-            >
-              <span className="text-[10px] font-sans uppercase tracking-widest opacity-80 font-semibold drop-shadow-md">
 
-              </span>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5 text-pink-400">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-              </svg>
-            </div>
 
-            {/* Transition Hint Card */}
-            <div
+            {/* Premium CTA Button */}
+            <motion.button
               ref={scrollHintRef}
-              className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[155] px-5 py-2.5 rounded-full bg-pink-950/60 border border-pink-500/30 backdrop-blur-md shadow-[0_0_30px_rgba(244,63,94,0.3)] pointer-events-none opacity-0 select-none flex items-center justify-center text-xs text-pink-200 gap-2 tracking-widest font-semibold uppercase animate-pulse"
+              onClick={handleScrollToCake}
+              className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[155] px-8 py-4 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 text-white font-semibold text-sm md:text-base tracking-widest uppercase shadow-[0_0_30px_rgba(244,63,94,0.4)] border border-pink-400/30 hover:border-pink-400/60 pointer-events-auto opacity-0 select-none flex items-center justify-center gap-2 cursor-pointer transition-colors duration-300"
               style={{ transform: "translate3d(0, 15px, 0)", willChange: "transform, opacity" }}
+              whileHover={{
+                scale: 1.08,
+                boxShadow: "0 0 45px rgba(244, 63, 94, 0.9)"
+              }}
+              whileTap={{
+                scale: 0.95
+              }}
+              animate={{
+                scale: [1, 1.03, 1],
+                boxShadow: [
+                  "0 0 15px rgba(244, 63, 94, 0.4)",
+                  "0 0 35px rgba(244, 63, 94, 0.8)",
+                  "0 0 15px rgba(244, 63, 94, 0.4)"
+                ]
+              }}
+              transition={{
+                scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+                boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+              }}
             >
-              Scroll Down to section
-            </div>
+              ❤️ Continue The Journey ❤️
+            </motion.button>
           </div>
         </>
       )}

@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --font-serif: var(--font-playfair), serif;
-  --font-sans: var(--font-montserrat), sans-serif;
-  --font-cursive: var(--font-sacramento), cursive;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: "Montserrat", Helvetica, Arial, sans-serif;
+  --font-cursive: "Sacramento", "Brush Script MT", cursive;
 }
 
 /* ==============================

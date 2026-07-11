@@ -2,9 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import gsap from "gsap";
-// @ts-ignore
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-// @ts-ignore
 import Image from "next/image";
 
 // Register GSAP ScrollTrigger client-side
@@ -22,39 +20,33 @@ interface TimelineItem {
 
 const timelineData: TimelineItem[] = [
   {
-    section: "first_memories",
-    title: "First Memories",
-    description: "The beautiful start of a friendship that would mean everything.",
+    section: "YOUR_memories",
+    title: "YOUR_memories",
+    description: "Capturing glowing smiles and random snapshots of joy.",
     emoji: "🌸",
     photos: ["/media/IMG-20251207-WA0025.jpg", "/media/IMG-20251207-WA0035.jpg"],
   },
   {
     section: "beautiful_moments",
     title: "Beautiful Moments",
-    description: "Capturing glowing smiles and random snapshots of joy.",
+    description: " Every snapshot tells a Jolly story.",
     emoji: "📸",
     photos: ["/media/25860_ae_lite_edit (1).jpg", "/media/IMG_20260613_223016.jpg"],
   },
-  {
-    section: "fun_adventures",
-    title: "Fun Adventures",
-    description: "Spontaneous plans and the absolute best of times.",
-    emoji: "🎈",
-    photos: ["/media/IMG_20260614_144734~2.jpg", "/media/IMG_20260614_180206.jpg"],
-  },
+
   {
     section: "special_days",
     title: "Special Days",
     description: "Dressed up, celebrating milestones, and feeling grateful.",
     emoji: "🌟",
-    photos: ["/media/IMG_20260614_180315.jpg", "/media/IMG_20260614_180739.jpg"],
+    photos: ["/media/IMG_20260614_180315.jpg"],
   },
   {
     section: "unforgettable_memories",
     title: "Unforgettable Memories",
     description: "Always there for each other, chapters that will last a lifetime.",
     emoji: "💖",
-    photos: ["/media/IMG_20260615_220045.jpg", "/media/IMG-20260108-WA0012.jpg"],
+    photos: ["/media/IMG-20260108-WA0012.jpg"],
   },
 ];
 
@@ -67,7 +59,19 @@ const Timeline = React.memo(function Timeline() {
     const line = lineRef.current;
     if (!container || !line) return;
 
-    let ctx = gsap.context(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const ctx = gsap.context(() => {
+      const selector = gsap.utils.selector(container);
+
+      if (prefersReducedMotion) {
+        // Instant visual states for accessibility with no movement
+        gsap.set(line, { scaleY: 1 });
+        const cards = selector(".timeline-card");
+        gsap.set([container, cards], { opacity: 1, y: 0, scale: 1 });
+        return;
+      }
+
       // 1. Eagerly animate the first 15% of the timeline line when it mounts
       gsap.fromTo(
         line,
@@ -88,10 +92,10 @@ const Timeline = React.memo(function Timeline() {
           scaleY: 1,
           ease: "none",
           scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top 25%", // Kicks in once the user actually starts scrolling past the top
+            trigger: container,
+            start: "top 25%",
             end: "bottom 75%",
-            scrub: true,
+            scrub: 1,
           },
         }
       );
@@ -114,7 +118,7 @@ const Timeline = React.memo(function Timeline() {
       );
 
       // 4. Stagger reveal all memory cards as timeline enters viewport
-      const cards = container.querySelectorAll(".timeline-card");
+      const cards = selector(".timeline-card");
       gsap.fromTo(
         cards,
         { opacity: 0, y: 50, scale: 0.95 },
@@ -134,7 +138,26 @@ const Timeline = React.memo(function Timeline() {
       );
     }, containerRef);
 
-    return () => ctx.revert();
+    // Refresh ScrollTrigger when images load to update calculations
+    const images = container.querySelectorAll("img");
+    const handleLoad = () => {
+      ScrollTrigger.refresh();
+    };
+
+    images.forEach((img) => {
+      if (img.complete) {
+        handleLoad();
+      } else {
+        img.addEventListener("load", handleLoad);
+      }
+    });
+
+    return () => {
+      ctx.revert();
+      images.forEach((img) => {
+        img.removeEventListener("load", handleLoad);
+      });
+    };
   }, []);
 
   return (
@@ -162,6 +185,7 @@ const Timeline = React.memo(function Timeline() {
           <div
             ref={lineRef}
             className="absolute left-4 md:left-1/2 top-0 bottom-0 w-[4px] bg-gradient-to-b from-rose-400 via-pink-500 to-amber-400 rounded-full transform -translate-x-1/2 origin-top pointer-events-none shadow-[0_0_10px_rgba(244,63,94,0.5)]"
+            style={{ willChange: "transform" }}
           />
 
           {/* Timeline Nodes */}
@@ -181,8 +205,10 @@ const Timeline = React.memo(function Timeline() {
 
                   {/* Card wrapper */}
                   <div className="w-full md:w-1/2 pl-12 md:pl-0 md:px-12">
-                    <div className="timeline-card bg-white/5 border border-white/10 p-6 md:p-8 rounded-3xl backdrop-blur-xl hover:bg-white/10 transition-all duration-700 shadow-[0_15px_40px_rgba(0,0,0,0.5)] group hover:shadow-[0_20px_60px_rgba(183,110,121,0.25)] hover:-translate-y-2">
-                      
+                    <div
+                      className="timeline-card bg-white/5 border border-white/10 p-6 md:p-8 rounded-3xl backdrop-blur-xl hover:bg-white/10 transition-all duration-700 shadow-[0_15px_40px_rgba(0,0,0,0.5)] group hover:shadow-[0_20px_60px_rgba(183,110,121,0.25)] hover:-translate-y-2"
+                      style={{ willChange: "transform, opacity" }}
+                    >
                       <div className="mb-6">
                         <h3 className="text-xl md:text-2xl font-bold text-pink-200 mb-2">{item.title}</h3>
                         <p className="text-zinc-400 text-sm">{item.description}</p>
@@ -197,13 +223,12 @@ const Timeline = React.memo(function Timeline() {
                           >
                             <Image
                               src={photo}
-                              alt={`Memory photo ${pIdx + 1}`}
+                              alt={`${item.title} - memory photo ${pIdx + 1}`}
                               fill
                               sizes="(max-width: 768px) 45vw, 20vw"
                               placeholder="blur"
                               blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
                               className="object-cover transform scale-105 group-hover/photo:scale-[1.2] transition-transform duration-[1500ms] ease-out origin-center"
-                              unoptimized
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/photo:opacity-100 transition-opacity duration-700 mix-blend-overlay" />
                           </div>

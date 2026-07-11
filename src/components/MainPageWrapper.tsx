@@ -1,121 +1,86 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Lenis from "lenis";
-// @ts-ignore
+import React, { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
-
 
 // Static imports for initial view components
 import CountdownIntro from "./CountdownIntro";
 import IntroScreen from "./IntroScreen";
 import AtmosphericBackground from "./AtmosphericBackground";
 
-// Dynamic imports for heavy or scroll-delayed components
+// Import types, constants, hooks, and helpers
+import { MainPageWrapperProps, Memory } from "../types";
+import { PAGE_TRANSITION } from "../lib/constants";
+import { useIntroFlow } from "../hooks/useIntroFlow";
+import { useLenisScroll } from "../hooks/useLenisScroll";
+import { useAutoScroll } from "../hooks/useAutoScroll";
+import { SectionSkeleton } from "./SectionSkeleton";
+import { ErrorBoundary } from "./ErrorBoundary";
+
+// Preload HeroSection to optimize initial render after welcome flow
+import HeroSection from "./HeroSection";
+
+// Dynamic imports for heavy/scroll-delayed components with premium loading skeletons
 const CelebrationEngine = dynamic(() => import("./CelebrationEngine"), { ssr: false });
-const HeroSection = dynamic(() => import("./HeroSection"));
-const Timeline = dynamic(() => import("./Timeline"));
-const MemoryGallery = dynamic<{ memories: any[] }>(() => import("./MemoryGallery"));
-const VideoSection = dynamic<{ memories: any[] }>(() => import("./VideoSection"));
-const InteractiveCake = dynamic(() => import("./InteractiveCake"), { ssr: false });
-const BalloonGame = dynamic(() => import("./BalloonGame"));
-const WishesLetter = dynamic(() => import("./WishesLetter"));
-const FinalSurprise = dynamic(() => import("./FinalSurprise"));
-const GiftReveal = dynamic(() => import("./GiftReveal"));
 
-interface MainPageWrapperProps {
-  memories: any[];
-}
+const Timeline = dynamic(() => import("./Timeline"), {
+  loading: () => <SectionSkeleton />,
+});
 
-export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
-  const [showCountdown, setShowCountdown] = useState(true);
-  const [showIntro, setShowIntro] = useState(false);
-  const [showMain, setShowMain] = useState(false);
+const MemoryGallery = dynamic<{ memories: Memory[] }>(() => import("./MemoryGallery"), {
+  loading: () => <SectionSkeleton />,
+});
 
-  // Handle flow transitions
-  const handleCountdownComplete = () => {
-    setShowCountdown(false);
-    setShowIntro(true);
-  };
+const VideoSection = dynamic<{ memories: Memory[] }>(() => import("./VideoSection"), {
+  loading: () => <SectionSkeleton />,
+});
 
-  const handleIntroComplete = () => {
-    setShowIntro(false);
-    setShowMain(true);
-  };
+const InteractiveCake = dynamic(() => import("./InteractiveCake"), {
+  ssr: false,
+  loading: () => <SectionSkeleton />,
+});
 
-  const [showContent, setShowContent] = useState(false);
+const BalloonGame = dynamic(() => import("./BalloonGame"), {
+  loading: () => <SectionSkeleton />,
+});
 
-  // Initialize Lenis Smooth Scroll only when main content is visible
-  useEffect(() => {
-    if (!showMain) return;
+const WishesLetter = dynamic(() => import("./WishesLetter"), {
+  loading: () => <SectionSkeleton />,
+});
 
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      wheelMultiplier: 1.0,
-    });
+const FinalSurprise = dynamic(() => import("./FinalSurprise"), {
+  loading: () => <SectionSkeleton />,
+});
 
-    // Expose lenis globally for programmatic smooth scroll integrations
-    if (typeof window !== "undefined") {
-      (window as any).lenis = lenis;
-    }
+const GiftReveal = dynamic(() => import("./GiftReveal"), {
+  loading: () => <SectionSkeleton />,
+});
 
-    const raf = (time: number) => {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    };
+export const MainPageWrapper = React.memo(function MainPageWrapper({ memories }: MainPageWrapperProps) {
+  const {
+    showCountdown,
+    showIntro,
+    showMain,
+    showContent,
+    handleCountdownComplete,
+    handleIntroComplete,
+    handleHeroComplete,
+  } = useIntroFlow();
 
-    requestAnimationFrame(raf);
+  const [cakeFailed, setCakeFailed] = useState(false);
 
-    return () => {
-      lenis.destroy();
-      if (typeof window !== "undefined") {
-        (window as any).lenis = undefined;
-      }
-    };
-  }, [showMain]);
+  // Memoize error callback for InteractiveCake
+  const handleCakeError = useCallback(() => {
+    console.error("[MainPageWrapper] InteractiveCake failed to load/render. Skipping auto scroll.");
+    setCakeFailed(true);
+  }, []);
 
-  // Handle auto-scroll to interactive cake section after showContent is true
-  useEffect(() => {
-    if (!showContent) return;
+  // Initialize Lenis scroll when main experience is ready
+  useLenisScroll(showMain);
 
-    let mounted = true;
-    let rafId1: number;
-    let rafId2: number;
-
-    const performScroll = () => {
-      if (!mounted) return;
-      const target = document.getElementById("interactive-cake");
-      if (target) {
-        console.log("[MainPageWrapper] Target Interactive Cake found. Initiating scroll.");
-        if ((window as any).lenis) {
-          (window as any).lenis.scrollTo("#interactive-cake", {
-            duration: 2.0,
-          });
-        } else {
-          target.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
-        }
-      } else {
-        // Target element not mounted yet, retry on next animation frame
-        rafId2 = requestAnimationFrame(performScroll);
-      }
-    };
-
-    // Double RAF to wait for React rendering and DOM reconcile
-    rafId1 = requestAnimationFrame(() => {
-      rafId2 = requestAnimationFrame(performScroll);
-    });
-
-    return () => {
-      mounted = false;
-      cancelAnimationFrame(rafId1);
-      cancelAnimationFrame(rafId2);
-    };
-  }, [showContent]);
+  // Trigger auto scroll to interactive cake once layout is rendered (skip if cake failed)
+  useAutoScroll(showContent, cakeFailed);
 
   return (
     <>
@@ -137,13 +102,13 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
         {showMain && (
           <motion.div
             key="main"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+            variants={PAGE_TRANSITION}
+            initial="initial"
+            animate="animate"
             className="relative min-h-[100dvh] text-white selection:bg-pink-500 selection:text-white overflow-x-hidden bg-transparent"
             style={{
-              paddingTop: 'env(safe-area-inset-top)',
-              paddingBottom: 'env(safe-area-inset-bottom)'
+              paddingTop: "env(safe-area-inset-top)",
+              paddingBottom: "env(safe-area-inset-bottom)",
             }}
           >
             {/* Background Layers */}
@@ -153,7 +118,7 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
             <div className="relative z-10">
               {/* 1. Hero Section (Netflix Intro -> Cinematic) */}
               <section id="hero">
-                <HeroSection onRevealComplete={() => setShowContent(true)} />
+                <HeroSection onRevealComplete={handleHeroComplete} />
               </section>
 
               {showContent && (
@@ -161,12 +126,23 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
                   {/* 2. Interactive 3D Birthday Cake Section */}
                   <section id="interactive-cake" className="py-24 px-6 md:px-16 bg-black/70">
                     <div className="max-w-4xl mx-auto">
-                      <InteractiveCake />
+                      <ErrorBoundary
+                        fallback={
+                          <div className="text-center py-12 text-zinc-400 font-serif border border-zinc-800/40 rounded-xl bg-zinc-900/10">
+                            🎂 Interactive cake is temporarily unavailable.
+                          </div>
+                        }
+                        onError={handleCakeError}
+                      >
+                        <InteractiveCake />
+                      </ErrorBoundary>
                     </div>
                   </section>
 
                   {/* 3. Balloon Pop Mini Game */}
-                  <BalloonGame />
+                  <section id="balloon-game">
+                    <BalloonGame />
+                  </section>
 
                   {/* 4. Sealed handwritten letter wishes */}
                   <section id="wishes-letter" className="py-24 px-6 md:px-16 bg-black/50">
@@ -178,17 +154,17 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
                   {/* 5. Final Cinematic Surprise Ending */}
                   <FinalSurprise />
 
-                  {/* 6. Gift Reveal */}
-                  <GiftReveal />
-
-                  {/* 7. Journey Timeline */}
+                  {/* 6. Journey Timeline */}
                   <Timeline />
 
-                  {/* 8. Photo Masonry Gallery */}
+                  {/* 7. Photo Masonry Gallery */}
                   <MemoryGallery memories={memories} />
 
-                  {/* 9. Video memories Slider */}
+                  {/* 8. Video memories Slider */}
                   <VideoSection memories={memories} />
+
+                  {/* 9. Gift Reveal */}
+                  <GiftReveal />
                 </>
               )}
             </div>
@@ -197,4 +173,6 @@ export default function MainPageWrapper({ memories }: MainPageWrapperProps) {
       </AnimatePresence>
     </>
   );
-}
+});
+
+export default MainPageWrapper;
