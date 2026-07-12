@@ -295,6 +295,7 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
               priority={isPriority}
               sizes="(max-width: 768px) 16rem, 20rem"
               className="object-cover"
+              unoptimized
               onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
                 e.currentTarget.style.display = 'none';
               }}

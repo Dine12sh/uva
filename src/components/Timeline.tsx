@@ -140,11 +140,23 @@ const Timeline = React.memo(function Timeline() {
       }
     });
 
+    // Resize observer to handle dynamic layout shifts from dynamic components (e.g. 3D Cake)
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof window !== "undefined" && typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        ScrollTrigger.refresh();
+      });
+      resizeObserver.observe(document.body);
+    }
+
     return () => {
       ctx.revert();
       images.forEach((img) => {
         img.removeEventListener("load", handleLoad);
       });
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
     };
   }, []);
 
@@ -217,6 +229,7 @@ const Timeline = React.memo(function Timeline() {
                               placeholder="blur"
                               blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
                               className="object-cover transform scale-105 group-hover/photo:scale-[1.2] transition-transform duration-[1500ms] ease-out origin-center"
+                              unoptimized
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/photo:opacity-100 transition-opacity duration-700 mix-blend-overlay" />
                           </div>
