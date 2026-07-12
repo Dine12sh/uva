@@ -142,9 +142,13 @@ const Timeline = React.memo(function Timeline() {
 
     // Resize observer to handle dynamic layout shifts from dynamic components (e.g. 3D Cake)
     let resizeObserver: ResizeObserver | null = null;
+    let rAF: number | null = null;
     if (typeof window !== "undefined" && typeof ResizeObserver !== "undefined") {
       resizeObserver = new ResizeObserver(() => {
-        ScrollTrigger.refresh();
+        if (rAF) cancelAnimationFrame(rAF);
+        rAF = requestAnimationFrame(() => {
+          ScrollTrigger.refresh();
+        });
       });
       resizeObserver.observe(document.body);
     }
@@ -156,6 +160,9 @@ const Timeline = React.memo(function Timeline() {
       });
       if (resizeObserver) {
         resizeObserver.disconnect();
+      }
+      if (rAF) {
+        cancelAnimationFrame(rAF);
       }
     };
   }, []);

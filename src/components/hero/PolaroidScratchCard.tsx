@@ -31,6 +31,7 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const glowBurstRef = useRef<HTMLSpanElement>(null);
   const rippleRef = useRef<HTMLSpanElement>(null);
+  const canvasRectRef = useRef<DOMRect | null>(null);
 
   const [isDrawing, setIsDrawing] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -135,14 +136,15 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const pixels = imgData.data;
     let transparentPixels = 0;
+    const stride = 16; // Check every 16th pixel to reduce computation by 93.75%
 
-    for (let i = 3; i < pixels.length; i += 4) {
+    for (let i = 3; i < pixels.length; i += 4 * stride) {
       if (pixels[i] < 128) {
         transparentPixels++;
       }
     }
 
-    const totalPixels = pixels.length / 4;
+    const totalPixels = pixels.length / (4 * stride);
     const percentage = (transparentPixels / totalPixels) * 100;
 
     // Trigger reveal at 50% completion
@@ -160,7 +162,8 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const rect = canvas.getBoundingClientRect();
+    // Use cached bounding client rect to prevent browser layout reflow thrashing on pointermove
+    const rect = canvasRectRef.current || canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
@@ -173,19 +176,24 @@ export const PolaroidScratchCard = React.memo(function PolaroidScratchCard({
     ctx.fill();
   }, [isRevealed]);
 
-  const handlePointerDown = (e: any) => {
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (isRevealed) return;
+    const canvas = canvasRef.current;
+    if (canvas) {
+      canvasRectRef.current = canvas.getBoundingClientRect();
+    }
     setIsDrawing(true);
     scratch(e.clientX, e.clientY);
   };
 
-  const handlePointerMove = (e: any) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDrawing || isRevealed) return;
     scratch(e.clientX, e.clientY);
   };
 
   const handlePointerUp = () => {
     setIsDrawing(false);
+    canvasRectRef.current = null; // Clear cached rect when scratch ends
     if (!isRevealed) {
       checkCompletion();
     }
