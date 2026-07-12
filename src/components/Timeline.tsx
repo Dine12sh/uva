@@ -72,35 +72,23 @@ const Timeline = React.memo(function Timeline() {
         return;
       }
 
-      // 1. Eagerly animate the first 15% of the timeline line when it mounts
+      // 1. Draw the scroll line from 0 to 1 as the timeline scrolls through viewport
       gsap.fromTo(
         line,
         { scaleY: 0 },
-        {
-          scaleY: 0.15,
-          ease: "power2.out",
-          duration: 0.8,
-          delay: 0.4, // Wait for hero to collapse
-        }
-      );
-
-      // 2. Attach a ScrollTrigger to draw the rest of the line from 0.15 to 1.0
-      gsap.fromTo(
-        line,
-        { scaleY: 0.15 },
         {
           scaleY: 1,
           ease: "none",
           scrollTrigger: {
             trigger: container,
-            start: "top 25%",
-            end: "bottom 75%",
-            scrub: 1,
+            start: "top 65%",
+            end: "bottom 80%",
+            scrub: 0.5,
           },
         }
       );
 
-      // 3. Fade up the entire timeline section container when it enters viewport
+      // 2. Fade up the entire timeline section container when it enters viewport
       gsap.fromTo(
         container,
         { opacity: 0, y: 40 },

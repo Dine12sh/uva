@@ -28,6 +28,14 @@ export default function WishesLetter({ customMessage }: WishesLetterProps) {
 
   const textToType = customMessage || defaultMessage;
   const indexRef = useRef(0);
+  const letterScrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll the typing letter content to the bottom
+  useEffect(() => {
+    if (letterScrollRef.current) {
+      letterScrollRef.current.scrollTop = letterScrollRef.current.scrollHeight;
+    }
+  }, [typedText]);
 
   // Typewriter effect — fixed with ref-based counter instead of closure
   useEffect(() => {
@@ -136,7 +144,10 @@ export default function WishesLetter({ customMessage }: WishesLetterProps) {
             </div>
 
             {/* Letter Text (Handwritten script) */}
-            <div className="relative max-h-[50vh] overflow-y-auto custom-scrollbar pr-4 whitespace-pre-wrap font-serif text-xl md:text-2xl leading-relaxed text-[#5C4A37] tracking-wide font-medium">
+            <div
+              ref={letterScrollRef}
+              className="relative max-h-[50vh] overflow-y-auto custom-scrollbar pr-4 whitespace-pre-wrap font-serif text-xl md:text-2xl leading-relaxed text-[#5C4A37] tracking-wide font-medium"
+            >
               {typedText}
               {!typingDone && <span className="typewriter-cursor" />}
             </div>
